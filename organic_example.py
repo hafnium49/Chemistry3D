@@ -1,11 +1,13 @@
 # Launch Isaac Sim before any other imports
+# These are the default first two lines in any standalone application
 from omni.isaac.kit import SimulationApp
 simulation_app = SimulationApp({"headless": False})
 
 import numpy as np
 from omni.isaac.core import World
 from omni.isaac.core.utils.stage import add_reference_to_stage
-from Chemistry3D_Demo.Chemistry3D_Task import Chem_Lab_Task
+from Chemistry3D_Task import Chem_Lab_Task
+# from Chemistry3D_Demo.Chemistry3D_Task import Chem_Lab_Task
 from omni.isaac.franka import Franka
 from omni.isaac.core.utils.types import ArticulationAction
 from pxr import Sdf, Gf, UsdPhysics
@@ -14,26 +16,16 @@ from omni.isaac.franka.controllers.rmpflow_controller import RMPFlowController
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.physx.scripts import physicsUtils, particleUtils
 
-import sys
-import os
-
-# Add current directory to sys.path to prioritize local imports
-cwd = os.getcwd()
-print(cwd)
-sys.path.insert(0, cwd)  # Use insert(0, ...) to give higher priority to the current directory
-from utils import Utils  # Import local utils.py
-
-
+from Chemistry3D_utils import Utils  # Import local utils.py
 from Controllers.Controller_Manager import ControllerManager
 from Sim_Container import Sim_Container
-# from utils import Utils  # Import local utils.py
-
+# from utils import Utils
 import logging
+import os
 import matplotlib.pyplot as plt
 from PIL import Image
 from moviepy.editor import ImageSequenceClip
 from tqdm import tqdm
-
 
 # Initialize the simulation world
 my_world = World(physics_dt=1.0 / 120.0, stage_units_in_meters=1.0, set_defaults=False)
@@ -46,6 +38,7 @@ utils._set_particle_parameter(my_world, particleContactOffset=0.003)
 # Add the chemical lab task to the simulation world
 my_world.add_task(Chem_Lab_Task(name='Chem_Lab_Task'))
 my_world.reset()
+my_world._physics_context.enable_gpu_dynamics(flag=True)
 
 # Retrieve objects from the scene
 Franka0 = my_world.scene.get_object("Franka0")
@@ -54,16 +47,32 @@ current_observations = my_world.get_observations()
 controller_manager = ControllerManager(my_world, Franka0, Franka0.gripper)
 
 # Initialize simulation containers with specific properties
-Sim_Bottle1 = Sim_Container(world=my_world, sim_container=my_world.scene.get_object("Bottle1"),
-                            solute={'MnO4^-': 0.02, 'K^+': 0.02, 'H^+': 0.04, 'SO4^2-': 0.02}, volume=0.02)
-Sim_Bottle2 = Sim_Container(world=my_world, sim_container=my_world.scene.get_object("Bottle2"),
-                            solute={'Fe^2+': 0.06, 'Cl^-': 0.12}, volume=0.02)
-Sim_Beaker1 = Sim_Container(world=my_world, sim_container=my_world.scene.get_object("Beaker1"))
-Sim_Beaker2 = Sim_Container(world=my_world, sim_container=my_world.scene.get_object("Beaker2"))
+Sim_Bottle1 = Sim_Container(
+    world=my_world,
+    sim_container=my_world.scene.get_object("Bottle1"),
+    solute={'c1ccc2cc3ccccc3cc2c1': 10},
+    org=True,
+    volume=10
+)
+Sim_Bottle2 = Sim_Container(
+    world=my_world,
+    sim_container=my_world.scene.get_object("Bottle2"),
+    solute={'BrBr': 20},
+    org=True,
+    volume=10
+)
+Sim_Beaker1 = Sim_Container(my_world, sim_container=my_world.scene.get_object("Beaker1"), org=True)
+Sim_Beaker2 = Sim_Container(my_world, sim_container=my_world.scene.get_object("Beaker2"), org=True)
 
+# Update the simulation containers with specific parameters and controllers
 Sim_Beaker1.sim_update(Sim_Bottle1, Franka0, controller_manager)
-Sim_Beaker2.sim_update(Sim_Bottle2, Franka0, controller_manager)
+Sim_Beaker2.sim_update(Sim_Bottle2, Franka0, controller_manager, 5)
 Sim_Beaker2.sim_update(Sim_Beaker1, Franka0, controller_manager)
+
+count = 1
+root_path = 'Organic_demo'
+
+my_world._physics_context.enable_gpu_dynamics(flag=True)
 
 # Main simulation loop
 while simulation_app.is_running():

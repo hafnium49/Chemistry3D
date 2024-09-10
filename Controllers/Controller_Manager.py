@@ -1,4 +1,5 @@
-from utils import Utils
+from Chemistry3D_utils import Utils
+# from utils import Utils
 from pxr import Sdf, Gf, UsdPhysics
 
 class ControllerManager:

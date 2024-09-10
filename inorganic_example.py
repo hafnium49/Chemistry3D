@@ -1,11 +1,13 @@
 # Launch Isaac Sim before any other imports
-from omni.isaac.kit import SimulationApp
+from isaacsim import SimulationApp
+# from omni.isaac.kit import SimulationApp
 simulation_app = SimulationApp({"headless": False})
 
 import numpy as np
 from omni.isaac.core import World
 from omni.isaac.core.utils.stage import add_reference_to_stage
-from Chemistry3D_Demo.Chemistry3D_Task import Chem_Lab_Task
+from Chemistry3D_Task import Chem_Lab_Task
+# from Chemistry3D_Demo.Chemistry3D_Task import Chem_Lab_Task
 from omni.isaac.franka import Franka
 from omni.isaac.core.utils.types import ArticulationAction
 from pxr import Sdf, Gf, UsdPhysics
@@ -14,15 +16,24 @@ from omni.isaac.franka.controllers.rmpflow_controller import RMPFlowController
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.physx.scripts import physicsUtils, particleUtils
 
+print("complete omniverse imports")
+
 import sys
-import os
+# import os
 
-# Add current directory to sys.path to prioritize local imports
-cwd = os.getcwd()
-print(cwd)
-sys.path.insert(0, cwd)  # Use insert(0, ...) to give higher priority to the current directory
-from utils import Utils  # Import local utils.py
+# # Add current directory to sys.path to prioritize local imports
+# cwd = os.getcwd()
+# print(cwd)
+print("old sys.path: ", sys.path)
+# # sys.path.insert(0, cwd.lower())  # Use insert(0, ...) to give higher priority to the current directory
+# sys.path.insert(0, "c:/users/chemi/OneDrive/Documents/GitHub/Chemistry3D".lower())  # Use insert(0, ...) to give higher priority to the current directory
+# print("new sys.path: ", sys.path)
+# If utils has already been imported from a wrong location, remove it
+# if 'utils' in sys.modules:
+#     del sys.modules['utils']
 
+# Import utils explicitly from the local directory
+from Chemistry3D_utils import Utils  # Import local utils.py
 
 from Controllers.Controller_Manager import ControllerManager
 from Sim_Container import Sim_Container

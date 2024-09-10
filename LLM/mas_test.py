@@ -17,7 +17,8 @@ from Controllers.pick_move_controller import PickMoveController
 from Controllers.pour_controller import PourController
 from Controllers.return_controller import ReturnController
 from Sim_Container import Sim_Container
-from utils import Utils
+from Chemistry3D_utils import Utils
+# from utils import Utils
 import logging
 import os
 import matplotlib.pyplot as plt
