@@ -4,7 +4,7 @@ from isaacsim import SimulationApp
 simulation_app = SimulationApp({"headless": False})
 
 import numpy as np
-from omni.isaac.core import World
+from omni.isaac.core import World, SimulationContext
 from omni.isaac.core.utils.stage import add_reference_to_stage
 from Chemistry3D_Task import Chem_Lab_Task
 # from Chemistry3D_Demo.Chemistry3D_Task import Chem_Lab_Task
@@ -52,11 +52,19 @@ my_world._physics_context.enable_gpu_dynamics(flag=True)
 stage = my_world.scene.stage
 scenePath = Sdf.Path("/physicsScene")
 
+# Create a simulation context
+simulation_context = SimulationContext(stage_units_in_meters=1.0)
 
-# Initialize the physics scene
-physicsScene = UsdPhysics.Scene.Define(stage, scenePath)
+# Get the physics context
+physics_context = simulation_context.get_physics_context()
+
 # Enable GPU dynamics
-physicsScene.CreateEnableGPUDynamicsAttr(True)
+physics_context.enable_gpu_dynamics(True)
+
+# # Initialize the physics scene
+# physicsScene = UsdPhysics.Scene.Define(stage, scenePath)
+# # Enable GPU dynamics
+# physicsScene.CreateEnableGPUDynamicsAttr(True)
 
 
 utils = Utils()
