@@ -143,7 +143,7 @@ class PickMoveController(BaseController):
 
         if self._event == 5:
             # Check if the current position has reached the target position
-            current_positions = np.array(self._gripper.get_world_pose())[0]
+            current_positions = np.array(self._gripper.get_world_pose())
             # current_positions = np.array(self._gripper.get_world_pose())[0]
             target_position2 = target_position + np.array([0,0,self._h1]) - np.array([0,0,target_position[2]])
             if np.allclose(current_positions, target_position2, atol=0.05):
