@@ -49,14 +49,19 @@ from tqdm import tqdm
 # Initialize the simulation world
 my_world = World(physics_dt=1.0 / 120.0, stage_units_in_meters=1.0, set_defaults=False)
 my_world._physics_context.enable_gpu_dynamics(flag=True)
+
+# Initialize the physics scene
 stage = my_world.scene.stage
 scenePath = Sdf.Path("/physicsScene")
-utils = Utils()
-utils._set_particle_parameter(my_world, particleContactOffset=0.003)
+physicsScene = UsdPhysics.Scene.Define(stage, scenePath)
+
+# Enable GPU dynamics
+physicsScene.CreateEnableGPUDynamicsAttr(True)
 
 # Add the chemical lab task to the simulation world
 my_world.add_task(Chem_Lab_Task(name='Chem_Lab_Task'))
 my_world.reset()
+
 
 # Retrieve objects from the scene
 Franka0 = my_world.scene.get_object("Franka0")
