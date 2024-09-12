@@ -1,6 +1,6 @@
 # Launch Isaac Sim before any other imports
-from isaacsim import SimulationApp
-# from omni.isaac.kit import SimulationApp
+# from isaacsim import SimulationApp
+from omni.isaac.kit import SimulationApp
 simulation_app = SimulationApp({"headless": False})
 
 import numpy as np
