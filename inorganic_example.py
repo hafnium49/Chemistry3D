@@ -51,6 +51,14 @@ my_world = World(physics_dt=1.0 / 120.0, stage_units_in_meters=1.0, set_defaults
 my_world._physics_context.enable_gpu_dynamics(flag=True)
 stage = my_world.scene.stage
 scenePath = Sdf.Path("/physicsScene")
+
+
+# Initialize the physics scene
+physicsScene = UsdPhysics.Scene.Define(stage, scenePath)
+# Enable GPU dynamics
+physicsScene.CreateEnableGPUDynamicsAttr(True)
+
+
 utils = Utils()
 utils._set_particle_parameter(my_world, particleContactOffset=0.003)
 
