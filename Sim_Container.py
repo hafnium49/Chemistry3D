@@ -118,7 +118,8 @@ class Sim_Container(Container):
             'franka_art_controller': robot.get_articulation_controller(),
             "current_joint_positions": robot.get_joint_positions(),
             'current_joint_velocities': robot.get_joint_velocities(),
-            'pour_speed': lambda obs: obs[Sim_Container1.get_sim_container().name]["Pour_Derecition"] * 55 / 180.0 * np.pi
+            # 'pour_speed': lambda obs: obs[Sim_Container1.get_sim_container().name]["Pour_Derecition"] * 55 / 180.0 * np.pi
+            'pour_speed': lambda obs: obs[Sim_Container1.get_sim_container().name]["Pour_Direcition"] * 55 / 180.0 * np.pi
         })
         
         controller_manager.add_task("return", {
