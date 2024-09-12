@@ -6,6 +6,8 @@ simulation_app = SimulationApp({"headless": False})
 import numpy as np
 from omni.isaac.core import World, SimulationContext
 from omni.isaac.core.utils.stage import add_reference_to_stage
+from omni.isaac.core.utils.extensions import enable_extension
+
 from Chemistry3D_Task import Chem_Lab_Task
 # from Chemistry3D_Demo.Chemistry3D_Task import Chem_Lab_Task
 from omni.isaac.franka import Franka
@@ -48,18 +50,31 @@ from tqdm import tqdm
 
 # Initialize the simulation world
 my_world = World(physics_dt=1.0 / 120.0, stage_units_in_meters=1.0, set_defaults=False)
-my_world._physics_context.enable_gpu_dynamics(flag=True)
-stage = my_world.scene.stage
-scenePath = Sdf.Path("/physicsScene")
-
-# Create a simulation context
-simulation_context = SimulationContext(stage_units_in_meters=1.0)
-
-# Get the physics context
-physics_context = simulation_context.get_physics_context()
 
 # Enable GPU dynamics
+physics_context = my_world.get_physics_context()
 physics_context.enable_gpu_dynamics(True)
+
+# Enable the PhysX extension
+enable_extension("omni.physx")
+
+# Get the stage
+stage = my_world.scene.stage
+
+# Create a physics scene if it doesn't exist
+scenePath = Sdf.Path("/physicsScene")
+if not stage.GetPrimAtPath(scenePath):
+    physicsScene = UsdPhysics.Scene.Define(stage, scenePath)
+    physicsScene.CreateEnableGPUDynamicsAttr(True)
+    
+# # Create a simulation context
+# simulation_context = SimulationContext(stage_units_in_meters=1.0)
+
+# # Get the physics context
+# physics_context = simulation_context.get_physics_context()
+
+# # Enable GPU dynamics
+# physics_context.enable_gpu_dynamics(True)
 
 # # Initialize the physics scene
 # physicsScene = UsdPhysics.Scene.Define(stage, scenePath)
