@@ -15,7 +15,7 @@ from omni.physx.scripts import physicsUtils, particleUtils
 from Controllers.Controller_Manager import ControllerManager
 from Controllers.pick_move_controller import PickMoveController
 from Controllers.pour_controller import PourController
-from Controllers.return_controller import ReturnController
+from Controllers.return_controller import PlaceController as ReturnController
 from Sim_Container import Sim_Container
 from Chemistry3D_utils import Utils
 # from utils import Utils
@@ -30,7 +30,10 @@ import threading
 my_world = World(physics_dt = 1.0/ 120.0,stage_units_in_meters=1.0, set_defaults=False)
 my_world._physics_context.set_broadphase_type('GPU')
 my_world._physics_context.enable_gpu_dynamics(flag=True)
-utils = Utils(my_world)
+# utils = Utils(my_world)
+# Initialize utils and set particle parameters
+utils = Utils()
+# utils._set_particle_parameter(my_world)
 stage = my_world.scene.stage
 scenePath = Sdf.Path("/physicsScene")
 task = Chem_Lab_Task_SL(name ='Chem_Lab_Task_SL')
@@ -55,9 +58,10 @@ my_dict = {
 
 current_observations = my_world.get_observations()
 # particle params#4*5 is 1ml
-utils._set_particle_parameter(particleContactOffset =  0.003)
+utils._set_particle_parameter(my_world, particleContactOffset =  0.003)
+# utils._set_particle_parameter(particleContactOffset =  0.003)
 # initialize the agent system
-controller_manager = ControllerManager(my_world, Franka)
+controller_manager = ControllerManager(my_world, Franka, Franka.gripper)
 mas = MAS(my_world,controller_manager)
 
 add_particles_str = mas._add_particles()

@@ -1,10 +1,11 @@
 from LLM.agent import AgentLLM as Agent
-from utils import *
+from Chemistry3D_utils import *
+# from utils import *
 import functools
 from Controllers.Controller_Manager import ControllerManager
 from Controllers.pick_move_controller import PickMoveController
 from Controllers.pour_controller import PourController
-from Controllers.return_controller import ReturnController
+from Controllers.return_controller import PlaceController as ReturnController
 from omni.isaac.franka.controllers.rmpflow_controller import RMPFlowController
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from chem_sim.simulation.database import reactions
@@ -235,3 +236,4 @@ class MAS:
 
         Returns:
             str: The observation
+        """
