@@ -6,7 +6,10 @@ from pxr import Gf
 import numpy as np
 import typing
 from Sim_Container import Sim_Container
-from utils import *
+# Import utils explicitly from the local directory
+from Chemistry3D_utils import *
+# from Chemistry3D_utils import get_ParticleSet_Centroid
+# from utils import *
 
 class PourController(BaseController):
     """
