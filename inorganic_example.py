@@ -1,40 +1,42 @@
-# Import the 'isaacsim' module first
-import isaacsim
+import sys
+import os
 
-# Import SimulationApp directly from 'isaacsim'
-from isaacsim import SimulationApp
+# Import SimulationApp
+try:
+    from isaacsim import SimulationApp
+except ImportError:
+    from omni.isaac.kit import SimulationApp
 
-# Initialize the simulation application with VR and required extensions enabled
-config = {
-    "headless": False,
-    "extensions": {
-        # Core VR extensions
-        "omni.kit.xr.core": {"enabled": True},
-        "omni.kit.xr.profile.common": {"enabled": True},
-        "omni.kit.xr.profile.vr": {"enabled": True},
-        "omni.kit.xr.system.openxr": {"enabled": True},
-        "omni.kit.xr.ui.config.metaquest": {"enabled": True},
-        "omni.kit.xr.ui.config.common": {"enabled": True},
-        "omni.kit.xr.ui.stage.common": {"enabled": True},
-        "omni.kit.xr.ui.window.profile": {"enabled": True},
-        "omni.kit.xr.ui.window.viewport": {"enabled": True},
-        "omni.kit.xr.advertise": {"enabled": True},
-        # Required services extensions that must be loaded at startup
-        "omni.services.facilities.base": {"enabled": True},
-        "omni.services.core": {"enabled": True},
-        "omni.services.transport.server.base": {"enabled": True},
-        "omni.services.transport.server.zeroconf": {"enabled": True},
-    },
+# Specify non-toggleable extensions in the CONFIG under "exts"
+CONFIG = {
+    "headless": False #,
+    # "renderer": "RayTracedLighting",
+    # "exts": [
+    #     # Non-toggleable extensions that must be loaded at startup
+    #     {"id": "omni.services.facilities.base"},
+    #     {"id": "omni.services.core"},
+    #     {"id": "omni.services.transport.server.base"},
+    #     {"id": "omni.services.transport.server.zeroconf"},
+    #     # VR-related extensions that cannot be enabled at runtime
+    #     {"id": "omni.kit.xr.core"},
+    #     {"id": "omni.kit.xr.profile.common"},
+    #     {"id": "omni.kit.xr.profile.vr"},
+    #     {"id": "omni.kit.xr.system.openxr"},
+    #     {"id": "omni.kit.xr.ui.config.metaquest"},
+    #     {"id": "omni.kit.xr.ui.config.common"},
+    #     {"id": "omni.kit.xr.ui.stage.common"},
+    #     {"id": "omni.kit.xr.ui.window.profile"},
+    #     {"id": "omni.kit.xr.ui.window.viewport"},
+    #     {"id": "omni.kit.xr.advertise"},
+    # ],
 }
 
-simulation_app = SimulationApp(config)
+simulation_app = SimulationApp(CONFIG)
 
-# Rest of your imports and code
-import numpy as np
+# Import necessary modules after initializing SimulationApp
 from omni.isaac.core import World, SimulationContext
 from omni.isaac.core.utils.stage import add_reference_to_stage
-
-from Chemistry3D_Task import Chem_Lab_Task
+from omni.isaac.core.utils import extensions
 from omni.isaac.franka import Franka
 from omni.isaac.core.utils.types import ArticulationAction
 from pxr import Sdf, Gf, UsdPhysics, PhysxSchema
@@ -43,11 +45,19 @@ from omni.isaac.franka.controllers.rmpflow_controller import RMPFlowController
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.physx.scripts import physicsUtils, particleUtils
 import omni.usd
+import numpy as np
 
-print("complete omniverse imports")
+# Enable toggleable extensions after initializing SimulationApp
+extensions.enable_extension("omni.services.facilities.base")
+extensions.enable_extension("omni.kit.xr.profile.vr")
+# extensions.enable_extension("omni.kit.xr.scene_view.core")
+# extensions.enable_extension("omni.kit.xr.scene_view.utils")
 
-from Chemistry3D_utils import Utils  # Import local utils.py
+print("Complete Omniverse imports")
 
+# Import local modules
+from Chemistry3D_utils import Utils
+from Chemistry3D_Task import Chem_Lab_Task
 from Controllers.Controller_Manager import ControllerManager
 from Sim_Container import Sim_Container
 
