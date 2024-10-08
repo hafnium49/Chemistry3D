@@ -1,5 +1,10 @@
-# Launch Isaac Sim before any other imports
-from omni.isaac.kit import SimulationApp
+# Import the 'isaacsim' module first
+import isaacsim
+
+# Import SimulationApp directly from 'isaacsim'
+from isaacsim import SimulationApp
+
+# Initialize the simulation application
 simulation_app = SimulationApp({"headless": False})
 
 import numpy as np
@@ -39,7 +44,7 @@ my_world = World(
     physics_dt=1.0 / 120.0,
     stage_units_in_meters=1.0,
     physics_prim_path="/physicsScene",
-    device="cuda",
+    device="cuda",  # Use 'gpu' (case-insensitive)
     set_defaults=False
 )
 
