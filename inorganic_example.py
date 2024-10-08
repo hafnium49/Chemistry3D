@@ -120,21 +120,21 @@ Sim_Beaker1.sim_update(Sim_Bottle1, Franka0, controller_manager)
 Sim_Beaker2.sim_update(Sim_Bottle2, Franka0, controller_manager)
 Sim_Beaker2.sim_update(Sim_Beaker1, Franka0, controller_manager)
 
-# Configure the VR interface
-import omni.kit.xr
+# # Configure the VR interface
+# import omni.kit.xr
 
-# Get the VR interface
-xr_interface = omni.kit.xr.get_xr_interface()
+# # Get the VR interface
+# xr_interface = omni.kit.xr.get_xr_interface()
 
-# Start the VR system
-xr_interface.startup()
+# # Start the VR system
+# xr_interface.startup()
 
-# Set the viewport window for VR rendering (ensure the viewport name matches your setup)
-xr_interface.set_viewport_window("Viewport")
+# # Set the viewport window for VR rendering (ensure the viewport name matches your setup)
+# xr_interface.set_viewport_window("Viewport")
 
-# Optional: Configure VR-specific settings
-xr_interface.set_eye_resolution(1920, 1080)  # Adjust based on your device capabilities
-xr_interface.set_refresh_rate(90)  # Adjust based on your device capabilities
+# # Optional: Configure VR-specific settings
+# xr_interface.set_eye_resolution(1920, 1080)  # Adjust based on your device capabilities
+# xr_interface.set_refresh_rate(90)  # Adjust based on your device capabilities
 
 # Main simulation loop
 while simulation_app.is_running():
