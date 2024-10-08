@@ -4,32 +4,26 @@ import isaacsim
 # Import SimulationApp directly from 'isaacsim'
 from isaacsim import SimulationApp
 
-# Initialize the simulation application with VR extensions enabled
+# Initialize the simulation application with VR and required extensions enabled
 config = {
     "headless": False,
     "extensions": {
-        # Core VR extension
+        # Core VR extensions
         "omni.kit.xr.core": {"enabled": True},
-        # Common VR profile
         "omni.kit.xr.profile.common": {"enabled": True},
-        # VR profile extension
         "omni.kit.xr.profile.vr": {"enabled": True},
-        # OpenXR system extension for OpenXR backend
         "omni.kit.xr.system.openxr": {"enabled": True},
-        # Meta Quest configuration extension
         "omni.kit.xr.ui.config.metaquest": {"enabled": True},
-        # Common UI configurations
         "omni.kit.xr.ui.config.common": {"enabled": True},
-        # Common stage UI for VR
         "omni.kit.xr.ui.stage.common": {"enabled": True},
-        # VR UI window extensions
         "omni.kit.xr.ui.window.profile": {"enabled": True},
         "omni.kit.xr.ui.window.viewport": {"enabled": True},
-        # Extension to advertise VR capabilities
         "omni.kit.xr.advertise": {"enabled": True},
-        # Additional VR-related extensions (if any dependencies are needed)
-        # "omni.kit.xr.scene_view.core": {"enabled": True},
-        # "omni.kit.xr.scene_view.utils": {"enabled": True},
+        # Required services extensions that must be loaded at startup
+        "omni.services.facilities.base": {"enabled": True},
+        "omni.services.core": {"enabled": True},
+        "omni.services.transport.server.base": {"enabled": True},
+        "omni.services.transport.server.zeroconf": {"enabled": True},
     },
 }
 
@@ -52,7 +46,6 @@ import omni.usd
 
 print("complete omniverse imports")
 
-# Import utils explicitly from the local directory
 from Chemistry3D_utils import Utils  # Import local utils.py
 
 from Controllers.Controller_Manager import ControllerManager
@@ -126,6 +119,22 @@ Sim_Beaker2 = Sim_Container(world=my_world, sim_container=my_world.scene.get_obj
 Sim_Beaker1.sim_update(Sim_Bottle1, Franka0, controller_manager)
 Sim_Beaker2.sim_update(Sim_Bottle2, Franka0, controller_manager)
 Sim_Beaker2.sim_update(Sim_Beaker1, Franka0, controller_manager)
+
+# Configure the VR interface
+import omni.kit.xr
+
+# Get the VR interface
+xr_interface = omni.kit.xr.get_xr_interface()
+
+# Start the VR system
+xr_interface.startup()
+
+# Set the viewport window for VR rendering (ensure the viewport name matches your setup)
+xr_interface.set_viewport_window("Viewport")
+
+# Optional: Configure VR-specific settings
+xr_interface.set_eye_resolution(1920, 1080)  # Adjust based on your device capabilities
+xr_interface.set_refresh_rate(90)  # Adjust based on your device capabilities
 
 # Main simulation loop
 while simulation_app.is_running():
