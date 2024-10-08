@@ -14,8 +14,10 @@ import numpy as np
 from pxr import Sdf, Gf, UsdPhysics
 from Sim_Container import Sim_Container
 
-PROMPTS_PATH = '/home/huangyan/.local/share/ov/pkg/isaac_sim-2023.1.1/standalone_examples/Chem_lab/prompts_JSON'
-LOG_PATH = '/home/huangyan/.local/share/ov/pkg/isaac_sim-2023.1.1/standalone_examples/Chem_lab/LLM/log'
+PROMPTS_PATH = 'prompts_JSON' #'/Users/chemi/OneDrive/Documents/GitHub/Chemistry3D/prompts_JSON' #'C:\Users\chemi\OneDrive\Documents\GitHub\Chemistry3D\prompts_JSON'
+#'/home/huangyan/.local/share/ov/pkg/isaac_sim-2023.1.1/standalone_examples/Chem_lab/prompts_JSON'
+LOG_PATH = 'LLM/log' #'/Users/chemi/OneDrive/Documents/GitHub/Chemistry3D/LLM/log' #'C:\Users\chemi\OneDrive\Documents\GitHub\Chemistry3D\LLM\log'
+#'/home/huangyan/.local/share/ov/pkg/isaac_sim-2023.1.1/standalone_examples/Chem_lab/LLM/log'
 
 class MAS:
     """
@@ -37,7 +39,9 @@ class MAS:
         self.generated_func_str = ''
         
         self.max_num_retry = 3
-        self.utils = Utils(self.my_world)
+        # self.utils = Utils(self.my_world)
+        self.utils = Utils()
+        self.utils._set_particle_parameter(self.my_world)
         self.initial_coder_function_dict = {
             'scenePath': Sdf.Path("/physicsScene"),
             'Gf': Gf,
