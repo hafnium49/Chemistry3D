@@ -4,18 +4,41 @@ import isaacsim
 # Import SimulationApp directly from 'isaacsim'
 from isaacsim import SimulationApp
 
-# Initialize the simulation application with VR extension enabled
-simulation_app = SimulationApp({
+# Initialize the simulation application with VR extensions enabled
+config = {
     "headless": False,
     "extensions": {
-        "omni.kit.xr": {"enabled": True},  # Enable the VR extension
-    }
-})
+        # Core VR extension
+        "omni.kit.xr.core": {"enabled": True},
+        # Common VR profile
+        "omni.kit.xr.profile.common": {"enabled": True},
+        # VR profile extension
+        "omni.kit.xr.profile.vr": {"enabled": True},
+        # OpenXR system extension for OpenXR backend
+        "omni.kit.xr.system.openxr": {"enabled": True},
+        # Meta Quest configuration extension
+        "omni.kit.xr.ui.config.metaquest": {"enabled": True},
+        # Common UI configurations
+        "omni.kit.xr.ui.config.common": {"enabled": True},
+        # Common stage UI for VR
+        "omni.kit.xr.ui.stage.common": {"enabled": True},
+        # VR UI window extensions
+        "omni.kit.xr.ui.window.profile": {"enabled": True},
+        "omni.kit.xr.ui.window.viewport": {"enabled": True},
+        # Extension to advertise VR capabilities
+        "omni.kit.xr.advertise": {"enabled": True},
+        # Additional VR-related extensions (if any dependencies are needed)
+        # "omni.kit.xr.scene_view.core": {"enabled": True},
+        # "omni.kit.xr.scene_view.utils": {"enabled": True},
+    },
+}
 
+simulation_app = SimulationApp(config)
+
+# Rest of your imports and code
 import numpy as np
 from omni.isaac.core import World, SimulationContext
 from omni.isaac.core.utils.stage import add_reference_to_stage
-# from omni.isaac.core.utils.extensions import enable_extension
 
 from Chemistry3D_Task import Chem_Lab_Task
 from omni.isaac.franka import Franka
@@ -25,12 +48,9 @@ from omni.isaac.sensor import Camera
 from omni.isaac.franka.controllers.rmpflow_controller import RMPFlowController
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.physx.scripts import physicsUtils, particleUtils
-# from omni.services.facilities import base
 import omni.usd
 
 print("complete omniverse imports")
-
-import sys
 
 # Import utils explicitly from the local directory
 from Chemistry3D_utils import Utils  # Import local utils.py
@@ -50,7 +70,7 @@ my_world = World(
     stage_units_in_meters=1.0,
     physics_prim_path="/physicsScene",
     device="cuda",  # Use 'gpu' (case-insensitive)
-    set_defaults=False
+    set_defaults=False,
 )
 
 # Get the physics context and enable GPU dynamics
