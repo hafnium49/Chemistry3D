@@ -4,8 +4,13 @@ import isaacsim
 # Import SimulationApp directly from 'isaacsim'
 from isaacsim import SimulationApp
 
-# Initialize the simulation application
-simulation_app = SimulationApp({"headless": False})
+# Initialize the simulation application with VR extension enabled
+simulation_app = SimulationApp({
+    "headless": False,
+    "extensions": {
+        "omni.kit.xr": {"enabled": True},  # Enable the VR extension
+    }
+})
 
 import numpy as np
 from omni.isaac.core import World, SimulationContext
