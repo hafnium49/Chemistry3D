@@ -10,13 +10,12 @@ from omni.isaac.core.utils.stage import add_reference_to_stage
 from Chemistry3D_Task import Chem_Lab_Task
 from omni.isaac.franka import Franka
 from omni.isaac.core.utils.types import ArticulationAction
-from pxr import Sdf, Gf, UsdPhysics
+from pxr import Sdf, Gf, UsdPhysics, PhysxSchema
 from omni.isaac.sensor import Camera
 from omni.isaac.franka.controllers.rmpflow_controller import RMPFlowController
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.physx.scripts import physicsUtils, particleUtils
 # from omni.services.facilities import base
-from pxr import PhysxSchema
 import omni.usd
 
 print("complete omniverse imports")
@@ -35,36 +34,34 @@ from PIL import Image
 from moviepy.editor import ImageSequenceClip
 from tqdm import tqdm
 
-# Initialize the simulation world
-my_world = World(physics_dt=1.0 / 120.0, stage_units_in_meters=1.0, set_defaults=False)
-my_world._physics_context.enable_gpu_dynamics(flag=True)
+# Initialize the simulation world with GPU dynamics enabled
+my_world = World(
+    physics_dt=1.0 / 120.0,
+    stage_units_in_meters=1.0,
+    physics_prim_path="/physicsScene",
+    device="cuda",
+    set_defaults=False
+)
+
+# Get the physics context and enable GPU dynamics
+physics_context = my_world.get_physics_context()
+physics_context.enable_gpu_dynamics(True)
+
+# Get the stage
 stage = my_world.scene.stage
-scenePath = Sdf.Path("/physicsScene")
 
-# # Initialize the simulation world with a specific physics_dt
-# my_world = World(physics_dt=1.0 / 120.0, stage_units_in_meters=1.0, set_defaults=False)
+# Ensure the physics scene exists at '/physicsScene'
+scene_path = Sdf.Path("/physicsScene")
+if not stage.GetPrimAtPath(scene_path):
+    physics_scene = UsdPhysics.Scene.Define(stage, scene_path)
+else:
+    physics_scene = UsdPhysics.Scene(stage.GetPrimAtPath(scene_path))
 
-# # Enable GPU dynamics for the physics context
-# physics_context = my_world.get_physics_context()
-# physics_context.enable_gpu_dynamics(True)
-
-# # Enable the PhysX extension
-# enable_extension("omni.physx")
-
-# # Get the stage
-# stage = my_world.scene.stage
-
-# # Create a physics scene if it doesn't exist and enable GPU dynamics
-# scenePath = Sdf.Path("/physicsScene")
-# if not stage.GetPrimAtPath(scenePath):
-#     physicsScene = UsdPhysics.Scene.Define(stage, scenePath)
-#     physicsScene.CreateEnableGPUDynamicsAttr(True)
-
-# # Access the physics scene directly through PhysxSchema
-# physics_scene = stage.GetPrimAtPath("/physicsScene")
-# if physics_scene.IsValid():
-#     physx_scene = PhysxSchema.PhysxSceneAPI.Apply(physics_scene)
-#     physx_scene.CreateEnableGPUDynamicsAttr().Set(True)
+# Apply PhysxSceneAPI and set the enableGPUDynamics attribute to True
+physics_scene_prim = stage.GetPrimAtPath("/physicsScene")
+if physics_scene_prim.IsValid():
+    physx_scene_api = PhysxSchema.PhysxSceneAPI.Apply(physics_scene_prim)
+    physx_scene_api.CreateEnableGPUDynamicsAttr().Set(True)
 
 # Initialize utils and set particle parameters
 utils = Utils()
@@ -81,10 +78,18 @@ current_observations = my_world.get_observations()
 controller_manager = ControllerManager(my_world, Franka0, Franka0.gripper)
 
 # Initialize simulation containers with specific properties
-Sim_Bottle1 = Sim_Container(world=my_world, sim_container=my_world.scene.get_object("Bottle1"),
-                            solute={'MnO4^-': 0.02, 'K^+': 0.02, 'H^+': 0.04, 'SO4^2-': 0.02}, volume=0.02)
-Sim_Bottle2 = Sim_Container(world=my_world, sim_container=my_world.scene.get_object("Bottle2"),
-                            solute={'Fe^2+': 0.06, 'Cl^-': 0.12}, volume=0.02)
+Sim_Bottle1 = Sim_Container(
+    world=my_world,
+    sim_container=my_world.scene.get_object("Bottle1"),
+    solute={'MnO4^-': 0.02, 'K^+': 0.02, 'H^+': 0.04, 'SO4^2-': 0.02},
+    volume=0.02
+)
+Sim_Bottle2 = Sim_Container(
+    world=my_world,
+    sim_container=my_world.scene.get_object("Bottle2"),
+    solute={'Fe^2+': 0.06, 'Cl^-': 0.12},
+    volume=0.02
+)
 Sim_Beaker1 = Sim_Container(world=my_world, sim_container=my_world.scene.get_object("Beaker1"))
 Sim_Beaker2 = Sim_Container(world=my_world, sim_container=my_world.scene.get_object("Beaker2"))
 
