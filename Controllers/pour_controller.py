@@ -5,10 +5,10 @@ from omni.isaac.manipulators.grippers.gripper import Gripper
 from pxr import Gf
 import numpy as np
 import typing
-from Sim_Container import Sim_Container
+from omni.isaac.examples.user_examples.Sim_Container import Sim_Container
 # Import utils explicitly from the local directory
-from Chemistry3D_utils import *
-# from Chemistry3D_utils import get_ParticleSet_Centroid
+from omni.isaac.examples.user_examples.Chemistry3D_utils import *
+# from omni.isaac.examples.user_examples.Chemistry3D_utils import get_ParticleSet_Centroid
 # from utils import *
 
 class PourController(BaseController):
@@ -128,10 +128,10 @@ class PourController(BaseController):
 
     def get_current_info(self):
         """
-        Get the current information from Sim_Container2.
+        Get the current information from omni.isaac.examples.user_examples.Sim_Container2.
 
         Returns:
-            The current information from Sim_Container2.
+            The current information from omni.isaac.examples.user_examples.Sim_Container2.
         """
         return self.Sim_Container2.get_info()
 
@@ -196,7 +196,7 @@ class PourController(BaseController):
 
     def Update_Solute(self):
         """
-        Update the solute by transferring liquids and solids from Sim_Container1 to Sim_Container2.
+        Update the solute by transferring liquids and solids from omni.isaac.examples.user_examples.Sim_Container1 to Sim_Container2.
         """
         if self._liquid_created:
             return

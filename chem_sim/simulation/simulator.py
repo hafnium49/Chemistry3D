@@ -5,9 +5,9 @@ import numpy as np
 import time
 
 from rxn4chemistry import RXN4ChemistryWrapper
-from chem_sim.simulation.utils import *
-from chem_sim.simulation.SearchInfo import *
-from chem_sim.simulation.database import chemical_db, reaction_db
+from omni.isaac.examples.user_examples.chem_sim.simulation.utils import *
+from omni.isaac.examples.user_examples.chem_sim.simulation.SearchInfo import *
+from omni.isaac.examples.user_examples.chem_sim.simulation.database import chemical_db, reaction_db
 
 
 def __init__(self, solute=None, org=False, volume=0, temp=25, verbose=False):

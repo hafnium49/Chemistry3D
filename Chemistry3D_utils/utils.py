@@ -3,7 +3,8 @@ from pxr import Gf, Vt, UsdPhysics, PhysxSchema, UsdShade, Sdf
 import omni.timeline
 import numpy as np
 import omni.kit.commands
-from chem_sim.simulation.simulator import Container
+from omni.isaac.examples.user_examples.chem_sim.simulation.simulator import Container
+# from omni.isaac.examples.user_examples.chem_sim.simulation.simulator import Container
 import re, json
 import pickle, os
 import ast

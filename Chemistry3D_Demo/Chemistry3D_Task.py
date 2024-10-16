@@ -12,7 +12,7 @@ import numpy as np
 import os
 
 # Get the current directory
-current_directory = os.getcwd()
+current_directory = os.path.dirname(os.path.abspath(__file__)) #os.getcwd()
 
 class Chem_Lab_Task(BaseTask):
     #NOTE: we only cover here a subset of the task functions that are available,

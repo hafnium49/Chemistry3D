@@ -1,10 +1,10 @@
-from chem_sim.simulation.simulator import Container
+from omni.isaac.examples.user_examples.chem_sim.simulation.simulator import Container
 from utils import Utils
 import numpy as np
 from pxr import Gf,Sdf
-from Controllers.Controller_Manager import ControllerManager
-from Controllers.pick_move_controller import PickMoveController
-from Controllers.return_controller import PlaceController
+from omni.isaac.examples.user_examples.Controllers.Controller_Manager import ControllerManager
+from omni.isaac.examples.user_examples.Controllers.pick_move_controller import PickMoveController
+from omni.isaac.examples.user_examples.Controllers.return_controller import PlaceController
 from utils import Utils
 from utils import *
 from omni.isaac.franka.controllers.rmpflow_controller import RMPFlowController
@@ -82,7 +82,7 @@ class Sim_Container(Container):
             speed=1.5
         )
 
-        from Controllers.pour_controller import PourController
+        from omni.isaac.examples.user_examples.Controllers.pour_controller import PourController
         pour_controller = PourController(
             name="pour_controller",
             cspace_controller=RMPFlowController(name="pour_cspace_controller", robot_articulation=robot),

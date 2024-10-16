@@ -1,4 +1,4 @@
-from Chemistry3D_utils import Utils
+from omni.isaac.examples.user_examples.Chemistry3D_utils import Utils
 # from utils import Utils
 from pxr import Sdf, Gf, UsdPhysics
 

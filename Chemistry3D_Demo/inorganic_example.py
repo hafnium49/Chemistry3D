@@ -24,8 +24,8 @@ sys.path.insert(0, cwd)  # Use insert(0, ...) to give higher priority to the cur
 from utils import Utils  # Import local utils.py
 
 
-from Controllers.Controller_Manager import ControllerManager
-from Sim_Container import Sim_Container
+from omni.isaac.examples.user_examples.Controllers.Controller_Manager import ControllerManager
+from omni.isaac.examples.user_examples.Sim_Container import Sim_Container
 # from utils import Utils  # Import local utils.py
 
 import logging

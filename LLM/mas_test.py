@@ -12,12 +12,12 @@ from omni.isaac.sensor import Camera
 from omni.isaac.franka.controllers.rmpflow_controller import RMPFlowController
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.physx.scripts import physicsUtils, particleUtils
-from Controllers.Controller_Manager import ControllerManager
-from Controllers.pick_move_controller import PickMoveController
-from Controllers.pour_controller import PourController
-from Controllers.return_controller import PlaceController as ReturnController
-from Sim_Container import Sim_Container
-from Chemistry3D_utils import Utils
+from omni.isaac.examples.user_examples.Controllers.Controller_Manager import ControllerManager
+from omni.isaac.examples.user_examples.Controllers.pick_move_controller import PickMoveController
+from omni.isaac.examples.user_examples.Controllers.pour_controller import PourController
+from omni.isaac.examples.user_examples.Controllers.return_controller import PlaceController as ReturnController
+from omni.isaac.examples.user_examples.Sim_Container import Sim_Container
+from omni.isaac.examples.user_examples.Chemistry3D_utils import Utils
 # from utils import Utils
 import logging
 import os

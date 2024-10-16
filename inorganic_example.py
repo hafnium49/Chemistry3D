@@ -56,10 +56,10 @@ extensions.enable_extension("omni.kit.xr.profile.vr")
 print("Complete Omniverse imports")
 
 # Import local modules
-from Chemistry3D_utils import Utils
+from omni.isaac.examples.user_examples.Chemistry3D_utils import Utils
 from Chemistry3D_Task import Chem_Lab_Task
-from Controllers.Controller_Manager import ControllerManager
-from Sim_Container import Sim_Container
+from omni.isaac.examples.user_examples.Controllers.Controller_Manager import ControllerManager
+from omni.isaac.examples.user_examples.Sim_Container import Sim_Container
 
 import logging
 import matplotlib.pyplot as plt

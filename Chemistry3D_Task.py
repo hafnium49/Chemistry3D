@@ -12,7 +12,7 @@ import numpy as np
 import os
 
 # Get the current directory
-current_directory = os.getcwd()
+current_directory = os.path.dirname(os.path.abspath(__file__)) #os.getcwd()
 
 class Chem_Lab_Task(BaseTask):
     #NOTE: we only cover here a subset of the task functions that are available,
@@ -57,7 +57,7 @@ class Chem_Lab_Task(BaseTask):
         add_reference_to_stage(usd_path=Beaker_path, prim_path="/World/Lab/Beaker2")   
         # add_reference_to_stage(usd_path=Beaker_path, prim_path="/World/Lab/Beaker3")   
         add_reference_to_stage(usd_path=Bottle_Kmno4_path, prim_path="/World/Bottle1")   
-        add_reference_to_stage(usd_path=Bottle_Hcl_path, prim_path="/World/Bottle2")   
+        add_reference_to_stage(usd_path=Bottle_Hcl_path, prim_path="/World/Bottle2")
         self._franka = scene.add(Franka(
                 prim_path="/World/Lab/franka0",
                 name=f"Franka0",
