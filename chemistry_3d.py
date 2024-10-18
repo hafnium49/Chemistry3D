@@ -15,7 +15,7 @@ from omni.isaac.examples.user_examples.Sim_Container import Sim_Container
 class Chemistry3D(BaseSample):
     def __init__(self) -> None:
         super().__init__()
-        self._world_settings["physics_dt"] = 1.0 / 30.0 #120.0
+        self._world_settings["physics_dt"] = 1.0 / 60.0 #120.0
         self._world_settings["rendering_dt"] = 1.0 / 30.0 #60.0
         self._world_settings["physics_prim_path"] = "/physicsScene"
         # self._world_settings["device"] = "cpu" #"cuda"
