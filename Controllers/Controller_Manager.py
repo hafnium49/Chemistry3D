@@ -96,6 +96,27 @@ class ControllerManager:
         task_params = self.generate_task_params(param_template, current_observations)
 
         actions = controller.forward(**task_params)
+
+        # Validate actions
+        if actions is None or not isinstance(actions, dict):
+            print(f"Controller {controller_name} returned invalid actions.")
+            return  # Or handle appropriately
+
+        # Check for None values in actions
+        valid = True
+        for key, value in actions.items():
+            if value is None:
+                print(f"Action '{key}' is None. Skipping apply_action.")
+                valid = False
+                break
+
+        if not valid:
+            return  # Or handle appropriately
+
+        # Proceed to apply actions
+        self.franka.apply_action(actions)
+
+        # Additional controller-specific logic
         if controller_type == 'pour':
             if controller.check_need_for_new_liquid() and controller.started_pouring():
                 controller.liquid_created_set(True)
@@ -112,7 +133,6 @@ class ControllerManager:
                 controller.solid_melted_set(True)
                 self.set_need_solid_melt(True)
 
-        self.franka.apply_action(actions)
         if controller.is_done():
             print(f"{controller_name} is done")
             self.current_task_index += 1  # Move to the next task
