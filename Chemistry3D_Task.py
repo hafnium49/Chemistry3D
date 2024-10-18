@@ -1,21 +1,24 @@
-from omni.isaac.franka import Franka
+# Chemistry3D_Task.py
+
+from omni.isaac.examples.user_examples.custom_franka import CustomFranka
 from omni.isaac.core.objects import DynamicCuboid
 from omni.isaac.core.utils.stage import add_reference_to_stage
 import numpy as np
 from omni.isaac.core.prims import GeometryPrim
-from omni.isaac.franka import Franka
+# from omni.isaac.franka import Franka
 from omni.isaac.core.objects import DynamicCuboid
 from omni.isaac.core.tasks import BaseTask
 from omni.isaac.sensor import Camera
-from pxr import  Gf
-import numpy as np
+from pxr import Gf
+import torch
 import os
 
 # Get the current directory
-current_directory = os.path.dirname(os.path.abspath(__file__)) #os.getcwd()
+current_directory = os.path.dirname(os.path.abspath(__file__))  # os.getcwd()
+
 
 class Chem_Lab_Task(BaseTask):
-    #NOTE: we only cover here a subset of the task functions that are available,
+    # NOTE: we only cover here a subset of the task functions that are available,
     # checkout the base class for all the available functions to override.
     # ex: calculate_metrics, is_done..etc.
     def __init__(self, name):
@@ -44,34 +47,34 @@ class Chem_Lab_Task(BaseTask):
         self._Box_Liquid_Offset = Gf.Vec3f(-0.01, -0.02, 0.08)
         self._rng_seed = 42
         self._rng = np.random.default_rng(self._rng_seed)
-        
-        #object place setting
 
-        Lab_path = os.path.join(current_directory,'Controller_test.usd')
-        Beaker_path = os.path.join(current_directory,'Assets/beaker.usd')
-        Bottle_Hcl_path = Bottle_Kmno4_path = os.path.join(current_directory,'Assets/bottle_large1/bottle_large1.usd')
+        # Object placement settings
+        Lab_path = os.path.join(current_directory, 'Controller_test.usd')
+        Beaker_path = os.path.join(current_directory, 'Assets/beaker.usd')
+        Bottle_Hcl_path = Bottle_Kmno4_path = os.path.join(current_directory, 'Assets/bottle_large1/bottle_large1.usd')
         # This will create a new XFormPrim and point it to the usd file as a reference
         # Similar to how pointers work in memory
-        add_reference_to_stage(usd_path=Lab_path, prim_path="/World/Lab")    
+        add_reference_to_stage(usd_path=Lab_path, prim_path="/World/Lab")
         add_reference_to_stage(usd_path=Beaker_path, prim_path="/World/Lab/Beaker1")
-        add_reference_to_stage(usd_path=Beaker_path, prim_path="/World/Lab/Beaker2")   
-        # add_reference_to_stage(usd_path=Beaker_path, prim_path="/World/Lab/Beaker3")   
-        add_reference_to_stage(usd_path=Bottle_Kmno4_path, prim_path="/World/Bottle1")   
+        add_reference_to_stage(usd_path=Beaker_path, prim_path="/World/Lab/Beaker2")
+        # add_reference_to_stage(usd_path=Beaker_path, prim_path="/World/Lab/Beaker3")
+        add_reference_to_stage(usd_path=Bottle_Kmno4_path, prim_path="/World/Bottle1")
         add_reference_to_stage(usd_path=Bottle_Hcl_path, prim_path="/World/Bottle2")
-        self._franka = scene.add(Franka(
-                prim_path="/World/Lab/franka0",
-                name=f"Franka0",
-                # usd_path = '/home/huangyan/isaac_sim-assets-1-2023.1.1/Assets/Isaac/2023.1.1/Isaac/Robots/Franka/franka.usd',
-                )
-            )
+
+        self._franka = scene.add(CustomFranka(
+            prim_path="/World/Lab/franka0",
+            name=f"Franka0",
+            # usd_path = '/path/to/franka.usd',
+        ))
+
         self._camera = scene.add(Camera(
-                prim_path="/World/Lab/Camera",
-                frequency = 30,
-                resolution = [640,480],
-                name=f"camera",
-                )
-            )        
-        # for Franka_idx in range(self._frankas_num):  # 从1到8
+            prim_path="/World/Lab/Camera",
+            frequency=30,
+            resolution=[640, 480],
+            name=f"camera",
+        ))
+
+        # for Franka_idx in range(self._frankas_num):  # From 1 to 8
         #     franka_name = f"Franka{Franka_idx}"
         #     prim_path = f"/World/Room/{franka_name.lower()}"
         #     franka_instance = scene.add(Franka(
@@ -79,50 +82,69 @@ class Chem_Lab_Task(BaseTask):
         #         name=franka_name,
         #     ))
         #     self._frankas.append(franka_instance)
+
         self._Beaker1 = scene.add(
             GeometryPrim(
                 prim_path="/World/Lab/Beaker1",
                 name=f"Beaker1",
-                position = self._Beaker1_position,
-                scale = np.array([0.8, 0.8, 0.88]),
-                )
+                position=self._Beaker1_position,
+                scale=np.array([0.8, 0.8, 0.88]),
             )
+        )
         self._Beaker2 = scene.add(
             GeometryPrim(
                 prim_path="/World/Lab/Beaker2",
                 name=f"Beaker2",
-                position = self._Beaker2_position,
-                scale = np.array([0.8, 0.8, 0.7]),
-                )
+                position=self._Beaker2_position,
+                scale=np.array([0.8, 0.8, 0.7]),
             )
+        )
         self._Bottle1 = scene.add(
             GeometryPrim(
                 prim_path="/World/Bottle1",
                 name=f"Bottle1",
-                position = self._Bottle1_position,
-                scale = np.array([0.8, 0.8, 0.9]),
-                )
+                position=self._Bottle1_position,
+                scale=np.array([0.8, 0.8, 0.9]),
             )
+        )
         self._Bottle2 = scene.add(
             GeometryPrim(
                 prim_path="/World/Bottle2",
                 name=f"Bottle2",
-                position = self._Bottle2_position,
-                scale = np.array([0.8, 0.8, 0.9]),
-                )
+                position=self._Bottle2_position,
+                scale=np.array([0.8, 0.8, 0.9]),
             )
+        )
         return
 
     # Information exposed to solve the task is returned from the task through get_observations
     def get_observations(self):
         current_joint_positions = self._franka.get_joint_positions()
+        # Ensure current_joint_positions is a NumPy array
+        if isinstance(current_joint_positions, torch.Tensor):
+            current_joint_positions = current_joint_positions.detach().cpu().numpy()
+
         beaker1_position, _ = self._Beaker1.get_world_pose()
+        if isinstance(beaker1_position, torch.Tensor):
+            beaker1_position = beaker1_position.detach().cpu().numpy()
+
         beaker2_position, _ = self._Beaker2.get_world_pose()
+        if isinstance(beaker2_position, torch.Tensor):
+            beaker2_position = beaker2_position.detach().cpu().numpy()
+
         bottle1_position, _ = self._Bottle1.get_world_pose()
-        bottle1_pour_position = np.add(beaker1_position, self._pour0_offset)
+        if isinstance(bottle1_position, torch.Tensor):
+            bottle1_position = bottle1_position.detach().cpu().numpy()
+
         bottle2_position, _ = self._Bottle2.get_world_pose()
+        if isinstance(bottle2_position, torch.Tensor):
+            bottle2_position = bottle2_position.detach().cpu().numpy()
+
+        # Perform NumPy operations
+        bottle1_pour_position = np.add(beaker1_position, self._pour0_offset)
         bottle2_pour_position = np.add(beaker2_position, self._Bottle2_Beaker_Pour_Offset)
         beaker1_pour_position = np.add(beaker2_position, self._pour1_offset)
+
         observations = {
             self._franka.name: {
                 "joint_positions": current_joint_positions,
@@ -130,34 +152,32 @@ class Chem_Lab_Task(BaseTask):
             self._Beaker1.name: {
                 "Default_Position": self._Beaker1_position,
                 "position": beaker1_position,
-                "Pour_Position":beaker1_pour_position,
-                "Return_Position":self._Beaker1_position + np.array([0,0.02,0]),
+                "Pour_Position": bottle1_pour_position,
+                "Return_Position": self._Beaker1_position + np.array([0, 0.02, 0]),
                 'Pour_Derection': -1,
             },
             self._Beaker2.name: {
                 "Default_Position": self._Beaker2_position,
                 "position": beaker2_position,
-                # "Pour_Position":beaker2_pour_position,
-                "Return_Position":self._Beaker2_Return_position
+                # "Pour_Position": beaker2_pour_position,
+                "Return_Position": self._Beaker2_Return_position
             },
             self._Bottle1.name: {
                 "Default_Position": self._Bottle1_position,
                 "position": bottle1_position,
-                "Pour_Position":bottle1_pour_position,
-                "Return_Position":self._Bottle1_position + np.array([0,0.02,0]),
+                "Pour_Position": bottle1_pour_position,
+                "Return_Position": self._Bottle1_position + np.array([0, 0.02, 0]),
                 'Pour_Derection': -1,
             },
             self._Bottle2.name: {
                 "Default_Position": self._Bottle2_position,
                 "position": bottle2_position,
-                "Pour_Position":bottle2_pour_position,
-                "Return_Position":self._Bottle2_position + np.array([0,-0.02,0]),
+                "Pour_Position": bottle2_pour_position,
+                "Return_Position": self._Bottle2_position + np.array([0, -0.02, 0]),
                 'Pour_Derection': 1,
             }
         }
         return observations
-
-
 
     # Called before each physics step,
     # for instance we can check here if the task was accomplished by
@@ -180,4 +200,3 @@ class Chem_Lab_Task(BaseTask):
         # self._cube.get_applied_visual_material().set_color(color=np.array([0, 0, 1.0]))
         self._task_achieved = False
         return
-    

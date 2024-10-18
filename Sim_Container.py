@@ -1,23 +1,37 @@
 from omni.isaac.examples.user_examples.chem_sim.simulation.simulator import Container
 from omni.isaac.examples.user_examples.Chemistry3D_utils import Utils
-# from utils import Utils
 import numpy as np
-from pxr import Gf,Sdf
+from pxr import Gf, Sdf
 from omni.isaac.examples.user_examples.Controllers.Controller_Manager import ControllerManager
 from omni.isaac.examples.user_examples.Controllers.pick_move_controller import PickMoveController
 from omni.isaac.examples.user_examples.Controllers.return_controller import PlaceController
 from omni.isaac.examples.user_examples.Chemistry3D_utils import Utils
-# from utils import Utils
 from omni.isaac.examples.user_examples.Chemistry3D_utils import *
-# from utils import *
 from omni.isaac.franka.controllers.rmpflow_controller import RMPFlowController
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from pxr import Sdf, Gf, UsdPhysics
 import omni.isaac.core.utils.prims as prims_utils
 from omni.isaac.core.objects import DynamicCuboid
+import torch
 
 utils = Utils()
 scenePath = Sdf.Path("/physicsScene")
+
+class RobotWrapper:
+    def __init__(self, robot):
+        self.robot = robot
+
+    def __getattr__(self, attr):
+        return getattr(self.robot, attr)
+
+    def get_world_pose(self):
+        position, orientation = self.robot.get_world_pose()
+        # Convert position and orientation to NumPy arrays
+        if isinstance(position, torch.Tensor):
+            position = position.detach().cpu().numpy()
+        if isinstance(orientation, torch.Tensor):
+            orientation = orientation.detach().cpu().numpy()
+        return position, orientation
 
 class Sim_Container(Container):
     def __init__(self, world, sim_container, object=None, solute=None, org=False, volume=0, temp=25, verbose=False):
@@ -76,11 +90,18 @@ class Sim_Container(Container):
                 return [255, 255, 255]
             return self.get_info()[1]['color'][:3]
         
+
     def sim_update(self, Sim_Container1, robot, controller_manager, pour_volume=None):
         """Update simulation with the new state and task details for the controller."""
+        # Wrap the robot with RobotWrapper
+        robot_wrapper = RobotWrapper(robot)
+
         pickmove_controller = PickMoveController(
             name="pickmove_controller",
-            cspace_controller=RMPFlowController(name="pickmove_cspace_controller", robot_articulation=robot),
+            cspace_controller=RMPFlowController(
+                name="pickmove_cspace_controller",
+                robot_articulation=robot_wrapper
+            ),
             gripper=robot.gripper,
             speed=1.5
         )
@@ -88,7 +109,10 @@ class Sim_Container(Container):
         from omni.isaac.examples.user_examples.Controllers.pour_controller import PourController
         pour_controller = PourController(
             name="pour_controller",
-            cspace_controller=RMPFlowController(name="pour_cspace_controller", robot_articulation=robot),
+            cspace_controller=RMPFlowController(
+                name="pour_cspace_controller",
+                robot_articulation=robot_wrapper
+            ),
             gripper=robot.gripper,
             Sim_Container1=Sim_Container1,
             Sim_Container2=self,
@@ -97,7 +121,10 @@ class Sim_Container(Container):
 
         return_controller = PlaceController(
             name="return_controller",
-            cspace_controller=RMPFlowController(name="return_cspace_controller", robot_articulation=robot),
+            cspace_controller=RMPFlowController(
+                name="return_cspace_controller",
+                robot_articulation=robot_wrapper
+            ),
             gripper=robot.gripper,
             speed=1.5
         )

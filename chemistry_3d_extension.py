@@ -4,7 +4,7 @@ import asyncio
 import os
 
 import omni.ui as ui
-from omni.isaac.examples.base_sample import BaseSampleExtension
+from omni.isaac.examples.base_sample.base_sample_extension import BaseSampleExtension
 from omni.isaac.examples.user_examples.chemistry_3d import Chemistry3D
 from omni.isaac.ui.ui_utils import btn_builder
 
