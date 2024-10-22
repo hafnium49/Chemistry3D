@@ -9,7 +9,10 @@ from omni.isaac.core.tasks import BaseTask
 from omni.isaac.sensor import Camera
 from pxr import  Gf
 import numpy as np
+import os
 
+# Get the current directory
+current_directory = os.path.dirname(os.path.abspath(__file__)) #os.getcwd()
 
 class Chem_Lab_Task_SL(BaseTask):
     #NOTE: we only cover here a subset of the task functions that are available,
@@ -44,9 +47,9 @@ class Chem_Lab_Task_SL(BaseTask):
         
         #object place setting
 
-        Lab_path = '/home/huangyan/.local/share/ov/pkg/isaac_sim-2023.1.1/standalone_examples/Chem_lab/Controller_test.usd'
-        Beaker_path = '/home/huangyan/.local/share/ov/pkg/isaac_sim-2023.1.1/standalone_examples/Chem_lab/Object_Usd/250_ml_beaker.usd'
-        Bottle_Fecl2_path = Bottle_Kmno4_path = '/home/huangyan/.local/share/ov/pkg/isaac_sim-2023.1.1/standalone_examples/Chem_lab/Object_Usd/bottle_large1/bottle_large1.usd'
+        Lab_path = os.path.join(current_directory,'Controller_test.usd') #'/home/huangyan/.local/share/ov/pkg/isaac_sim-2023.1.1/standalone_examples/Chem_lab/Controller_test.usd'
+        Beaker_path = os.path.join(current_directory,'Assets/beaker.usd') #'/home/huangyan/.local/share/ov/pkg/isaac_sim-2023.1.1/standalone_examples/Chem_lab/Object_Usd/250_ml_beaker.usd'
+        Bottle_Fecl2_path = Bottle_Kmno4_path = os.path.join(current_directory,'Assets/bottle_large1/bottle_large1.usd') #'/home/huangyan/.local/share/ov/pkg/isaac_sim-2023.1.1/standalone_examples/Chem_lab/Object_Usd/bottle_large1/bottle_large1.usd'
         # This will create a new XFormPrim and point it to the usd file as a reference
         # Similar to how pointers work in memory
         add_reference_to_stage(usd_path=Lab_path, prim_path="/World/Lab")    

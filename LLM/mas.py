@@ -1,4 +1,4 @@
-from LLM.agent import AgentLLM as Agent
+from omni.isaac.examples.user_examples.LLM.agent import AgentLLM as Agent
 from omni.isaac.examples.user_examples.Chemistry3D_utils import *
 # from utils import *
 import functools
@@ -10,13 +10,19 @@ from omni.isaac.franka.controllers.rmpflow_controller import RMPFlowController
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 from omni.isaac.examples.user_examples.chem_sim.simulation.database import reactions
 
+import os
 import numpy as np
 from pxr import Sdf, Gf, UsdPhysics
 from omni.isaac.examples.user_examples.Sim_Container import Sim_Container
 
-PROMPTS_PATH = 'prompts_JSON' #'/Users/chemi/OneDrive/Documents/GitHub/Chemistry3D/prompts_JSON' #'C:\Users\chemi\OneDrive\Documents\GitHub\Chemistry3D\prompts_JSON'
+# Get the current directory
+current_directory = os.path.dirname(os.path.abspath(__file__)) #os.getcwd()
+# Get the parent directory
+parent_directory = os.path.dirname(current_directory)
+
+PROMPTS_PATH = f'{parent_directory}/prompts_JSON' #'prompts_JSON' #'/Users/chemi/OneDrive/Documents/GitHub/Chemistry3D/prompts_JSON' #'C:\Users\chemi\OneDrive\Documents\GitHub\Chemistry3D\prompts_JSON'
 #'/home/huangyan/.local/share/ov/pkg/isaac_sim-2023.1.1/standalone_examples/Chem_lab/prompts_JSON'
-LOG_PATH = 'LLM/log' #'/Users/chemi/OneDrive/Documents/GitHub/Chemistry3D/LLM/log' #'C:\Users\chemi\OneDrive\Documents\GitHub\Chemistry3D\LLM\log'
+LOG_PATH = f'{current_directory}/log' #'LLM/log' #'/Users/chemi/OneDrive/Documents/GitHub/Chemistry3D/LLM/log' #'C:\Users\chemi\OneDrive\Documents\GitHub\Chemistry3D\LLM\log'
 #'/home/huangyan/.local/share/ov/pkg/isaac_sim-2023.1.1/standalone_examples/Chem_lab/LLM/log'
 
 class MAS:

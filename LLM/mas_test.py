@@ -4,7 +4,7 @@ simulation_app = SimulationApp({"headless": False})
 import numpy as np
 from omni.isaac.core import World
 from omni.isaac.core.utils.stage import add_reference_to_stage
-from mas_task import Chem_Lab_Task_SL
+from omni.isaac.examples.user_examples.LLM.mas_task import Chem_Lab_Task_SL
 from omni.isaac.franka import Franka
 from omni.isaac.core.utils.types import ArticulationAction
 from pxr import Sdf, Gf, UsdPhysics
