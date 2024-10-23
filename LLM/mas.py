@@ -81,7 +81,7 @@ class MAS:
         """
         self.agent_controller_generator = Agent("controller_generator", save_path=LOG_PATH)
         self.agent_planner = Agent("planner", save_path=LOG_PATH)
-        self.agent_coder = Agent("coder", save_path=LOG_PATH)
+        # self.agent_coder = Agent("coder", save_path=LOG_PATH)
         self.agent_debugger = Agent("debugger", save_path=LOG_PATH)
         self.agent_reaction_responser = Agent("reaction_responser", save_path=LOG_PATH)
         self.agent_add_controllers = Agent("add_controllers", save_path=LOG_PATH)
@@ -98,7 +98,7 @@ class MAS:
         self.agent_add_rigidbody.load_system_prompt_from_file(PROMPTS_PATH + '/add_rigid_body_prompt.txt')
         self.agent_add_particles.load_system_prompt_from_file(PROMPTS_PATH + '/add_particle_set_prompt.txt')
         self.agent_add_tasks.load_system_prompt_from_file(PROMPTS_PATH + '/add_tasks_prompt.txt')
-        self.agent_coder.load_system_prompt_from_file(PROMPTS_PATH + '/coder_prompt.txt')
+        # self.agent_coder.load_system_prompt_from_file(PROMPTS_PATH + '/coder_prompt.txt')
         self.agent_debugger.load_system_prompt_from_file(PROMPTS_PATH + '/debugger_prompt.txt')
         
     def _update_system_prompts(self):
@@ -111,7 +111,7 @@ class MAS:
         self.agent_add_rigidbody.load_system_prompt_from_file(PROMPTS_PATH + '/add_rigid_body_prompt.txt')
         self.agent_add_particles.load_system_prompt_from_file(PROMPTS_PATH + '/add_particle_set_prompt.txt')
         self.agent_add_tasks.load_system_prompt_from_file(PROMPTS_PATH + '/add_tasks_prompt.txt')
-        self.agent_coder.load_system_prompt_from_file(PROMPTS_PATH + '/coder_prompt.txt')
+        # self.agent_coder.load_system_prompt_from_file(PROMPTS_PATH + '/coder_prompt.txt')
         self.agent_debugger.load_system_prompt_from_file(PROMPTS_PATH + '/debugger_prompt.txt')
         
     def _generate_plan(self, controllers_str):
@@ -130,12 +130,12 @@ class MAS:
         print(f'Number of generated plan steps: {len(self.plan_steps_list)}')
         
     def _debug_code(self, error_str, num_iter=3) -> bool:
-        for i in range(num_iter):
-            debug_code_str = self.agent_debugger.generate_response(self.code_str + str(error_str))
-            flag, error_str = self.agent_coder.exec_code(debug_code_str, self.coder_function_dict)
-            if flag:
-                print("Debug successfully!")
-                return True
+        # for i in range(num_iter):
+        #     debug_code_str = self.agent_debugger.generate_response(self.code_str + str(error_str))
+            # flag, error_str = self.agent_coder.exec_code(debug_code_str, self.coder_function_dict)
+            # if flag:
+            #     print("Debug successfully!")
+            #     return True
         return False
         
     def _response_reaction(self, expected_chem):

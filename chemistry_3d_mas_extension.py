@@ -17,7 +17,7 @@ class Chemistry3DMASExtension(BaseSampleExtension):
             name="Chemistry 3D MAS",
             title="Chemistry 3D MAS",
             doc_link="",  # Provide a documentation link if available
-            overview="This example demonstrates a chemistry simulation with MAS in Isaac Sim.",
+            overview="This example demonstrates a chemistry MAS simulation in Isaac Sim.",
             sample=Chemistry3DMAS(),
             file_path=os.path.abspath(__file__),
             number_of_extra_frames=1,
@@ -25,37 +25,31 @@ class Chemistry3DMASExtension(BaseSampleExtension):
         self.task_ui_elements = {}
         frame = self.get_frame(index=0)
         self.build_task_controls_ui(frame)
-        return
 
     def _on_start_simulation_button_event(self):
-        asyncio.ensure_future(self.sample.run())
+        asyncio.ensure_future(self.sample.on_start_simulation_async())
         self.task_ui_elements["Start Simulation"].enabled = False
-        return
 
     def post_reset_button_event(self):
         self.task_ui_elements["Start Simulation"].enabled = True
-        return
 
     def post_load_button_event(self):
         self.task_ui_elements["Start Simulation"].enabled = True
-        return
 
     def post_clear_button_event(self):
         self.task_ui_elements["Start Simulation"].enabled = False
-        return
 
     def build_task_controls_ui(self, frame):
         with frame:
             with ui.VStack(spacing=5):
                 frame.title = "Task Controls"
                 frame.visible = True
-                btn_dict = {
+                dict = {
                     "label": "Start Simulation",
                     "type": "button",
                     "text": "Start Simulation",
                     "tooltip": "Start the Chemistry MAS Simulation",
                     "on_clicked_fn": self._on_start_simulation_button_event,
                 }
-
-                self.task_ui_elements["Start Simulation"] = btn_builder(**btn_dict)
-                self.task_ui_elements["Start Simulation"].enabled = True
+                self.task_ui_elements["Start Simulation"] = btn_builder(**dict)
+                self.task_ui_elements["Start Simulation"].enabled = False
