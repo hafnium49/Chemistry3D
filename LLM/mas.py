@@ -1,6 +1,7 @@
+# mas.py
+
 from omni.isaac.examples.user_examples.LLM.agent import AgentLLM as Agent
-from omni.isaac.examples.user_examples.Chemistry3D_utils import *
-# from utils import *
+from omni.isaac.examples.user_examples.Chemistry3D_utils import Utils
 import functools
 from omni.isaac.examples.user_examples.Controllers.Controller_Manager import ControllerManager
 from omni.isaac.examples.user_examples.Controllers.pick_move_controller import PickMoveController
@@ -14,38 +15,36 @@ import os
 import numpy as np
 from pxr import Sdf, Gf, UsdPhysics
 from omni.isaac.examples.user_examples.Sim_Container import Sim_Container
+import traceback
 
 # Get the current directory
-current_directory = os.path.dirname(os.path.abspath(__file__)) #os.getcwd()
+current_directory = os.path.dirname(os.path.abspath(__file__))
 # Get the parent directory
 parent_directory = os.path.dirname(current_directory)
 
-PROMPTS_PATH = f'{parent_directory}/prompts_JSON' #'prompts_JSON' #'/Users/chemi/OneDrive/Documents/GitHub/Chemistry3D/prompts_JSON' #'C:\Users\chemi\OneDrive\Documents\GitHub\Chemistry3D\prompts_JSON'
-#'/home/huangyan/.local/share/ov/pkg/isaac_sim-2023.1.1/standalone_examples/Chem_lab/prompts_JSON'
-LOG_PATH = f'{current_directory}/log' #'LLM/log' #'/Users/chemi/OneDrive/Documents/GitHub/Chemistry3D/LLM/log' #'C:\Users\chemi\OneDrive\Documents\GitHub\Chemistry3D\LLM\log'
-#'/home/huangyan/.local/share/ov/pkg/isaac_sim-2023.1.1/standalone_examples/Chem_lab/LLM/log'
+PROMPTS_PATH = f'{parent_directory}/prompts_JSON'
+LOG_PATH = f'{current_directory}/log'
 
 class MAS:
     """
     Multi-Agent System (MAS) for managing and simulating chemical reactions and robotics control in a simulated environment.
-    
+
     Args:
         world: The simulation world object.
         controller_manager: The controller manager object.
     """
-    
+
     def __init__(self, world, controller_manager) -> None:
         self.my_world = world
         self._observation = self.my_world.get_observations()
-        
+
         self.plan_steps_list = []
         self.plan_message_str = ''  # Used for debugging
         self.code_str = ''
         self.reaction_dict = reactions
         self.generated_func_str = ''
-        
+
         self.max_num_retry = 3
-        # self.utils = Utils(self.my_world)
         self.utils = Utils()
         self.utils._set_particle_parameter(self.my_world)
         self.initial_coder_function_dict = {
@@ -71,17 +70,17 @@ class MAS:
             'utils': self.utils,
         }
         self.coder_function_dict = self.initial_coder_function_dict.copy()
-        
+
         self.planner_prompt_filename = '/planner_prompt.txt'
         self.agents_initialization()
-    
+
     def agents_initialization(self):
         """
         Initialize agents for different tasks and load their system prompts.
         """
         self.agent_controller_generator = Agent("controller_generator", save_path=LOG_PATH)
         self.agent_planner = Agent("planner", save_path=LOG_PATH)
-        # self.agent_coder = Agent("coder", save_path=LOG_PATH)
+        self.agent_coder = Agent("coder", save_path=LOG_PATH)  # Initialize agent_coder here
         self.agent_debugger = Agent("debugger", save_path=LOG_PATH)
         self.agent_reaction_responser = Agent("reaction_responser", save_path=LOG_PATH)
         self.agent_add_controllers = Agent("add_controllers", save_path=LOG_PATH)
@@ -89,7 +88,7 @@ class MAS:
         self.agent_add_rigidbody = Agent("add_rigidbody", save_path=LOG_PATH)
         self.agent_add_particles = Agent("add_particles", save_path=LOG_PATH)
         self.agent_add_tasks = Agent("add_tasks", save_path=LOG_PATH)
-        
+
         # Load system prompts
         self.agent_controller_generator.load_system_prompt_from_file(PROMPTS_PATH + '/controller_generator_prompt.txt')
         self.agent_reaction_responser.load_system_prompt_from_file(PROMPTS_PATH + '/reaction_responser_prompt.txt')
@@ -98,9 +97,9 @@ class MAS:
         self.agent_add_rigidbody.load_system_prompt_from_file(PROMPTS_PATH + '/add_rigid_body_prompt.txt')
         self.agent_add_particles.load_system_prompt_from_file(PROMPTS_PATH + '/add_particle_set_prompt.txt')
         self.agent_add_tasks.load_system_prompt_from_file(PROMPTS_PATH + '/add_tasks_prompt.txt')
-        # self.agent_coder.load_system_prompt_from_file(PROMPTS_PATH + '/coder_prompt.txt')
+        self.agent_coder.load_system_prompt_from_file(PROMPTS_PATH + '/coder_prompt.txt')
         self.agent_debugger.load_system_prompt_from_file(PROMPTS_PATH + '/debugger_prompt.txt')
-        
+
     def _update_system_prompts(self):
         """
         Update system prompts for all agents.
@@ -111,9 +110,9 @@ class MAS:
         self.agent_add_rigidbody.load_system_prompt_from_file(PROMPTS_PATH + '/add_rigid_body_prompt.txt')
         self.agent_add_particles.load_system_prompt_from_file(PROMPTS_PATH + '/add_particle_set_prompt.txt')
         self.agent_add_tasks.load_system_prompt_from_file(PROMPTS_PATH + '/add_tasks_prompt.txt')
-        # self.agent_coder.load_system_prompt_from_file(PROMPTS_PATH + '/coder_prompt.txt')
+        self.agent_coder.load_system_prompt_from_file(PROMPTS_PATH + '/coder_prompt.txt')
         self.agent_debugger.load_system_prompt_from_file(PROMPTS_PATH + '/debugger_prompt.txt')
-        
+
     def _generate_plan(self, controllers_str):
         """
         Generate a plan for a given task.
@@ -128,16 +127,16 @@ class MAS:
         message = self.agent_planner.generate_response(user_prompt)
         self.plan_steps_list = extract_scripts(message)
         print(f'Number of generated plan steps: {len(self.plan_steps_list)}')
-        
+
     def _debug_code(self, error_str, num_iter=3) -> bool:
-        # for i in range(num_iter):
-        #     debug_code_str = self.agent_debugger.generate_response(self.code_str + str(error_str))
-            # flag, error_str = self.agent_coder.exec_code(debug_code_str, self.coder_function_dict)
-            # if flag:
-            #     print("Debug successfully!")
-            #     return True
+        for i in range(num_iter):
+            debug_code_str = self.agent_debugger.generate_response(self.code_str + str(error_str))
+            flag, error_str = self.agent_coder.exec_code(debug_code_str, self.coder_function_dict)
+            if flag:
+                print("Debug successfully!")
+                return True
         return False
-        
+
     def _response_reaction(self, expected_chem):
         """
         Respond to a chemical reaction.
@@ -152,7 +151,7 @@ class MAS:
         user_prompt = observation + 'reaction_dict:' + str(self.reaction_dict) + '\\n' + expected_chem
         message = self.agent_reaction_responser.generate_response(user_prompt)
         return message
-    
+
     def _add_particles(self):
         """
         Add particles for each object.
@@ -163,7 +162,7 @@ class MAS:
         observation = str(self._observation)
         message = self.agent_add_particles.generate_response(observation)
         return message
-    
+
     def _add_sim_container(self, particle_set_str):
         """
         Add simulation containers for each object.
@@ -178,7 +177,7 @@ class MAS:
         user_prompt = observation + particle_set_str
         message = self.agent_add_sim_containers.generate_response(user_prompt)
         return message
-    
+
     def _add_rigidbody(self):
         """
         Add rigidbody for each object.
@@ -190,7 +189,7 @@ class MAS:
         added_objects_dict_str = 'Objects introduced in the scene: ' + str(added_objects_dict.keys()) + '\\n'
         message = self.agent_add_rigidbody.generate_response(added_objects_dict_str)
         return message
-    
+
     def _add_controllers(self, controllers_str):
         """
         Add controllers for a given task.
@@ -204,7 +203,7 @@ class MAS:
         user_prompt = controllers_str
         message = self.agent_add_controllers.generate_response(user_prompt)
         return message
-    
+
     def _add_tasks(self, controllers_str):
         """
         Add tasks for a given controller.
@@ -218,7 +217,7 @@ class MAS:
         user_prompt = controllers_str
         message = self.agent_add_tasks.generate_response(user_prompt)
         return message
-    
+
     def _generate_controllers(self, prompt, observation):
         """
         Generate controllers for a given task.
@@ -233,10 +232,10 @@ class MAS:
         self.observation_str = self._observations_to_string(observation)
         instantiated_objects = f"'Instantiated objects: '{self.coder_function_dict}\\n"
         total_prompt = f"'observation: '{self.observation_str}\n{prompt}"
-        
+
         message = self.agent_controller_generator.generate_response(total_prompt)
         return message
-    
+
     def _observations_to_string(self, observation):
         """
         Convert observation dictionary into a descriptive string.
@@ -247,3 +246,45 @@ class MAS:
         Returns:
             str: The observation
         """
+        observation_str = ""
+        for key, value in observation.items():
+            observation_str += f"{key}: {value}\n"
+        return observation_str
+
+    def get_added_coder_function_dict(self):
+        """
+        Get the additional objects added to the coder function dictionary.
+
+        Returns:
+            dict: The added objects.
+        """
+        added_keys = set(self.coder_function_dict.keys()) - set(self.initial_coder_function_dict.keys())
+        added_objects = {key: self.coder_function_dict[key] for key in added_keys}
+        return added_objects
+
+    def _generate_code_str(self, code_str):
+        """
+        Store the generated code string.
+
+        Args:
+            code_str (str): The code string to be stored.
+        """
+        if not hasattr(self, 'code_str'):
+            self.code_str = ''
+        self.code_str += code_str + '\n'
+
+    def _execute_code_str(self):
+        """
+        Execute the stored code string.
+        """
+        code = self.code_str
+        flag, error_str = self.agent_coder.exec_code(code, self.coder_function_dict)
+        if not flag:
+            # Handle error, perhaps debug
+            print(f"Error executing code: {error_str}")
+            # Optionally attempt to debug
+            if not self._debug_code(error_str):
+                print("Failed to debug code.")
+        # Clear code_str after execution
+        self.code_str = ''
+
