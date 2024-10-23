@@ -1,7 +1,8 @@
 from openai import OpenAI, OpenAIError
 import os
 from datetime import datetime
-from utils import *
+from omni.isaac.examples.user_examples.Chemistry3D_utils import *
+# from utils import *
 import traceback
 from dotenv import load_dotenv  # Import the load_dotenv function
 
@@ -9,7 +10,7 @@ from dotenv import load_dotenv  # Import the load_dotenv function
 load_dotenv("../.env")
 
 # Get the OpenAI API key from the .env file
-openai.api_key = os.getenv("OPENAI_API_KEY")
+api_key = os.getenv("OPENAI_API_KEY")
 # Configure the global client
 # openai.api_type = "your_own_type"
 # openai.base_url = "your_own_base"  # Note: 'api_base' is now 'base_url'
@@ -28,6 +29,7 @@ class AgentLLM:
             # Get the current directory
             current_directory = os.path.dirname(os.path.abspath(__file__))
             self.save_path = f'{current_directory}/log'
+        self.client = OpenAI(api_key = api_key)
 
     def load_system_prompt_from_file(self, filepath: str):
         with open(filepath, 'r') as f:
@@ -52,7 +54,7 @@ class AgentLLM:
                     ]
                     prompt = input_messages[-1]["content"]
 
-                response = openai.chat.completions.create(
+                response = self.client.chat.completions.create(
                     model=self._model_engine,
                     messages=input_messages,
                     max_tokens=1500,
