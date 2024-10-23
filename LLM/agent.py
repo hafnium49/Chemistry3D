@@ -4,20 +4,25 @@ from datetime import datetime
 from utils import *
 import traceback
 
-
 openai.api_key = "your_own_key"
 openai.api_type = "your_own_type"
 openai.api_base =  "your_own_base"  
 openai.api_version = "your_own version"
 
 class AgentLLM:
-    def __init__(self, name: str, model_engine = "ssrgpt4", save_path ="/home/huangyan/.local/share/ov/pkg/isaac_sim-2023.1.1/standalone_examples/Chem_lab/LLM/log"):
+    def __init__(self, name: str, model_engine = "ssrgpt4", save_path =""):
         self._name = name
         self._model_engine = model_engine
         
         self.system_prompt = "You are a helpful AI assistant."
         self.conversation_log = []
-        self.save_path = save_path
+        if save_path:
+            self.save_path = save_path
+        else:
+            # Get the current directory
+            current_directory = os.path.dirname(os.path.abspath(__file__))
+            self.save_path = f'{current_directory}/log'
+        
         
     
     def load_system_prompt_from_file(self, filepath: str):
