@@ -1,5 +1,6 @@
 # chemistry_3d_mas.py
 
+import omni  # Ensure this import is present
 from omni.isaac.examples.base_sample import BaseSample
 from omni.isaac.core import World
 from omni.isaac.examples.user_examples.LLM.mas_task import Chem_Lab_Task_SL
@@ -9,6 +10,7 @@ from omni.isaac.examples.user_examples.Chemistry3D_utils import Utils
 import threading
 import os
 from omni.isaac.examples.user_examples.LLM.mas import MAS
+from omni.isaac.examples.user_examples.Sim_Container import Sim_Container
 from pxr import Sdf, UsdPhysics, PhysxSchema
 
 class Chemistry3DMAS(BaseSample):
@@ -26,8 +28,14 @@ class Chemistry3DMAS(BaseSample):
         self.user_prompt = None
         self.controllers_ready = False
         self.utils = None
-        self.my_dict = {}
         self.input_thread = None
+        self.mycamera = None
+
+        # Simulation containers
+        self.Sim_Bottle_Kmno4 = None
+        self.Sim_Bottle_Fecl2 = None
+        self.Sim_Beaker_Kmno4 = None
+        self.Sim_Beaker_Fecl2 = None
 
     def setup_scene(self):
         world = self.get_world()
@@ -58,57 +66,102 @@ class Chemistry3DMAS(BaseSample):
 
     async def setup_post_load(self):
         world = self.get_world()
-        # Initialize simulation
-        await world.initialize_simulation_context_async()
-        # Reset the world
-        await world.reset_async()
-        await world.pause_async()
-        # Get robot and other objects
+        # Wait for the stage to load
+        await omni.kit.app.get_app().next_update_async()
+
+        # Get the robot and initialize it
         self.Franka = world.scene.get_object("Franka")
-        self.my_dict = {
-            'Franka': self.Franka,
-            'Bottle_Kmno4': world.scene.get_object("Bottle_Kmno4"),
-            'beaker_Kmno4': world.scene.get_object("beaker_Kmno4"),
-            'Bottle_Fecl2': world.scene.get_object("Bottle_Fecl2"),
-            'beaker_Fecl2': world.scene.get_object("beaker_Fecl2")
-        }
-        # Set particle parameters
-        self.utils._set_particle_parameter(world, particleContactOffset=0.003)
-        # Initialize the agent system
+        print(f"Franka: {self.Franka}")
+        if self.Franka is None:
+            print("Franka robot not found in the scene.")
+        self.mycamera = world.scene.get_object("camera")
+
+        # Initialize the controller manager
         self.controller_manager = ControllerManager(world, self.Franka, self.Franka.gripper)
+
+        # Initialize simulation containers with specific properties
+        self.Sim_Bottle_Kmno4 = Sim_Container(
+            world=world,
+            sim_container=world.scene.get_object("Bottle_Kmno4"),
+            solute={'MnO4^-': 0.02, 'K^+': 0.02, 'H^+': 0.04, 'SO4^2-': 0.02},
+            volume=0.02
+        )
+        self.Sim_Bottle_Fecl2 = Sim_Container(
+            world=world,
+            sim_container=world.scene.get_object("Bottle_Fecl2"),
+            solute={'Fe^2+': 0.06, 'Cl^-': 0.12},
+            volume=0.02
+        )
+        self.Sim_Beaker_Kmno4 = Sim_Container(world=world, sim_container=world.scene.get_object("beaker_Kmno4"))
+        self.Sim_Beaker_Fecl2 = Sim_Container(world=world, sim_container=world.scene.get_object("beaker_Fecl2"))
+
+        # Initialize the MAS system
         self.mas = MAS(world, self.controller_manager)
-        # Add particles and containers
-        add_particles_str = self.mas._add_particles()
-        with open('add_particle_set_str.txt', 'w') as file:
-            file.write(add_particles_str)
-        self.mas._generate_code_str(add_particles_str)
-        self.mas._execute_code_str()
-        sim_container_str = self.mas._add_sim_container(add_particles_str)
-        with open('add_sim_container_str.txt', 'w') as file:
-            file.write(sim_container_str)
-        self.mas._generate_code_str(sim_container_str)
-        self.mas._execute_code_str()
-        add_rigidbody_str = self.mas._add_rigidbody()
-        with open('add_rigidbody_str.txt', 'w') as file:
-            file.write(add_rigidbody_str)
-        self.mas._generate_code_str(add_rigidbody_str)
-        self.mas._execute_code_str()
-        # Initial user prompt
-        user = 'Please observe the test bench and tell me what kind of chemical experiments I can do'
-        print(self.mas._response_reaction(user))
+
+        # Perform simulation updates (if needed)
+        # For this MAS implementation, we may rely on dynamic code generation
+        # Alternatively, we can directly call sim_update methods
+        # Here, we will proceed with direct calls as per chemistry_3d.py
+
+        # Perform simulation updates
+        self.Sim_Beaker_Kmno4.sim_update(self.Sim_Bottle_Kmno4, self.Franka, self.controller_manager)
+        self.Sim_Beaker_Fecl2.sim_update(self.Sim_Bottle_Fecl2, self.Franka, self.controller_manager)
+        self.Sim_Beaker_Fecl2.sim_update(self.Sim_Beaker_Kmno4, self.Franka, self.controller_manager)
+
         # Start user input thread
         self.user_prompt = None
         self.controllers_ready = False
         self.input_thread = threading.Thread(target=self.get_user_input)
         self.input_thread.daemon = True
         self.input_thread.start()
+
         # Register physics callback
         world.add_physics_callback("sim_step", self.sim_step)
+
+    def get_user_input(self):
+        while True:
+            self.user_prompt = input("Enter your task: ")
+
+    def sim_step(self, step_size):
+        world = self.get_world()
+        if world.is_playing():
+            if world.current_time_step_index == 0:
+                world.reset()
+                self.controller_manager.reset()
+            current_observations = world.get_observations()
+            if self.user_prompt and not self.controllers_ready:
+                print('Code generating...')
+                # Generate controllers based on the user prompt
+                controllers_str = self.mas._generate_controllers(self.user_prompt, current_observations)
+                with open('controllers_str.txt', 'w') as file:
+                    file.write(controllers_str)
+                self.mas._generate_code_str(controllers_str)
+                self.mas._execute_code_str()
+                add_controllers_str = self.mas._add_controllers(controllers_str)
+                with open('add_controllers_str.txt', 'w') as file:
+                    file.write(add_controllers_str)
+                self.mas._generate_code_str(add_controllers_str)
+                self.mas._execute_code_str()
+                add_tasks_str = self.mas._add_tasks(add_controllers_str)
+                with open('add_tasks_str.txt', 'w') as file:
+                    file.write(add_tasks_str)
+                self.mas._generate_code_str(add_tasks_str)
+                self.mas._execute_code_str()
+                self.controllers_ready = True
+                print('Controllers executing...')
+            if self.controllers_ready:
+                # Execute the controller manager
+                self.controller_manager.execute(current_observations=current_observations)
+                if self.controller_manager.is_done():
+                    world.pause()
+                    self.controllers_ready = False  # Reset for next user prompt
+                    self.user_prompt = None
 
     async def setup_pre_reset(self):
         world = self.get_world()
         # Remove physics callback
-        world.remove_physics_callback("sim_step")
+        if world.physics_callback_exists("sim_step"):
+            world.remove_physics_callback("sim_step")
 
     async def setup_post_reset(self):
         world = self.get_world()
@@ -133,47 +186,12 @@ class Chemistry3DMAS(BaseSample):
         self.user_prompt = None
         self.controllers_ready = False
         self.utils = None
-        self.my_dict = {}
         self.input_thread = None
-
-    def get_user_input(self):
-        while True:
-            self.user_prompt = input("Enter your task: ")
-
-    def sim_step(self, step_size):
-        world = self.get_world()
-        if world.is_playing():
-            if world.current_time_step_index == 0:
-                world.reset()
-                self.controller_manager.reset()
-            current_observations = world.get_observations()
-            if self.user_prompt and not self.controllers_ready:
-                print('code generating ...')
-                # Generate controllers based on the user prompt
-                controllers_str = self.mas._generate_controllers(self.user_prompt, current_observations)
-                with open('controllers_str.txt', 'w') as file:
-                    file.write(controllers_str)
-                self.mas._generate_code_str(controllers_str)
-                self.mas._execute_code_str()
-                add_controllers_str = self.mas._add_controllers(controllers_str)
-                with open('add_controllers_str.txt', 'w') as file:
-                    file.write(add_controllers_str)
-                self.mas._generate_code_str(add_controllers_str)
-                self.mas._execute_code_str()
-                add_tasks_str = self.mas._add_tasks(add_controllers_str + str(self.my_dict))
-                with open('add_tasks_str.txt', 'w') as file:
-                    file.write(add_tasks_str)
-                self.mas._generate_code_str(add_tasks_str)
-                self.mas._execute_code_str()
-                self.controllers_ready = True
-                print('controllers executing ...')
-            if self.controllers_ready:
-                # Execute the controller manager
-                self.controller_manager.execute(current_observations=current_observations)
-                if self.controller_manager.is_done():
-                    world.pause()
-                    self.controllers_ready = False  # Reset for next user prompt
-                    self.user_prompt = None
+        self.mycamera = None
+        self.Sim_Bottle_Kmno4 = None
+        self.Sim_Bottle_Fecl2 = None
+        self.Sim_Beaker_Kmno4 = None
+        self.Sim_Beaker_Fecl2 = None
 
     async def on_start_simulation_async(self):
         world = self.get_world()
