@@ -6,11 +6,17 @@ from omni.isaac.examples.user_examples.Chemistry3D_utils import *
 import traceback
 from dotenv import load_dotenv  # Import the load_dotenv function
 
+# Get the current directory
+current_directory = os.path.dirname(os.path.abspath(__file__)) #os.getcwd()
+# Get the parent directory
+parent_directory = os.path.dirname(current_directory)
+
 # Load environment variables from the .env file
-load_dotenv("../.env")
+load_dotenv(f"{parent_directory}/.env")
 
 # Get the OpenAI API key from the .env file
-api_key = os.getenv("OPENAI_API_KEY")
+api_key_value = os.getenv("OPENAI_API_KEY")
+# print(f"API Key: {api_key_value}")
 # Configure the global client
 # openai.api_type = "your_own_type"
 # openai.base_url = "your_own_base"  # Note: 'api_base' is now 'base_url'
@@ -29,7 +35,11 @@ class AgentLLM:
             # Get the current directory
             current_directory = os.path.dirname(os.path.abspath(__file__))
             self.save_path = f'{current_directory}/log'
-        self.client = OpenAI(api_key = api_key)
+        # # Load environment variables from the .env file
+        # load_dotenv("../.env")
+        # api_key = os.getenv("OPENAI_API_KEY")
+        # print(f"API Key: {api_key_value}")
+        self.client = OpenAI(api_key=api_key_value)
 
     def load_system_prompt_from_file(self, filepath: str):
         with open(filepath, 'r') as f:
