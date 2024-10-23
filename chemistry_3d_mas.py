@@ -1,6 +1,10 @@
 # chemistry_3d_mas.py
 
-from omni.isaac.kit import SimulationApp
+# Import SimulationApp
+try:
+    from isaacsim import SimulationApp
+except ImportError:
+    from omni.isaac.kit import SimulationApp
 simulation_app = SimulationApp({"headless": False})
 
 import numpy as np
