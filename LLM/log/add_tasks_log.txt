@@ -1,14 +1,14 @@
 Prompt: ```json
 {
-    "Task Description":"This task involves picking up Sim_Bottle_Kmno4, pouring its contents into Sim_Beaker_Kmno4, and then returning Sim_Bottle_Kmno4 to its original position. The role of this task is to transfer the liquid from the bottle to the beaker accurately and safely using the robotic arm.",
+    "Task Description": "This task involves three main actions: First, picking up the Sim_Bottle_Kmno4 using a robotic arm, then pouring its contents into the Sim_Beaker_Kmno4, and finally returning the Sim_Bottle_Kmno4 to its original position. The controllers work in sequence to achieve this task, ensuring precise handling and placement.",
     "Code": "controller_manager.add_controller('pickmove_controller', pickmove_controller)\ncontroller_manager.add_controller('pour_controller', pour_controller)\ncontroller_manager.add_controller('return_controller', return_controller)"
 }
 ```
 ####################
 Response: ```json
 {   
-    "Task Description":"The task is accomplished by first picking up Sim_Bottle_Kmno4 using the pickmove_controller, then pouring its contents into Sim_Beaker_Kmno4 using the pour_controller, and finally returning Sim_Bottle_Kmno4 to its original position using the return_controller.",
-    "Code": "controller_manager.add_task('pickmove_controller', 'pick', {'picking_position': lambda obs: obs['Sim_Bottle_Kmno4']['position'], 'target_position': lambda obs: obs['Sim_Beaker_Kmno4']['position'], 'current_joint_positions': lambda obs: Franka.get_joint_positions()})\ncontroller_manager.add_task('pour_controller', 'pour', {'franka_art_controller': lambda obs: Franka.get_articulation_controller(), 'current_joint_positions': lambda obs: Franka.get_joint_positions(), 'current_joint_velocities': lambda obs: Franka.get_joint_velocities(), 'pour_speed': 55 / 180.0 * np.pi})\ncontroller_manager.add_task('return_controller', 'return', {'pour_position': lambda obs: obs['Sim_Beaker_Kmno4']['position'], 'return_position': lambda obs: np.array(obs['Sim_Bottle_Kmno4']['Return_Position']), 'current_joint_positions': lambda obs: Franka.get_joint_positions()})"
+    "Task Description":"The task sequence involves three main actions: picking up the Sim_Bottle_Kmno4 with a robotic arm, pouring its contents into the Sim_Beaker_Kmno4, and finally returning the Sim_Bottle_Kmno4 to its original position. These tasks ensure precise handling and placement of the chemical.",
+    "Code": "controller_manager.add_task('pickmove_controller','pick',{'picking_position':lambda obs:obs['Sim_Bottle_Kmno4']['position'],'target_position':lambda obs:obs['Sim_Beaker_Kmno4']['Pour_Position'],'current_joint_positions':lambda obs:Franka.get_joint_positions()})\ncontroller_manager.add_task('pour_controller','pour',{'franka_art_controller':lambda obs:Franka.get_articulation_controller(),'current_joint_positions':lambda obs:Franka.get_joint_positions(),'current_joint_velocities':lambda obs:Franka.get_joint_velocities(),'pour_speed':55 / 180.0 * np.pi})\ncontroller_manager.add_task('return_controller','return',{'pour_position':lambda obs:obs['Sim_Beaker_Kmno4']['Pour_Position'],'return_position':lambda obs:np.array(obs['Sim_Bottle_Kmno4']['Return_Position']),'current_joint_positions':lambda obs:Franka.get_joint_positions()})"
 }
 ```
 
