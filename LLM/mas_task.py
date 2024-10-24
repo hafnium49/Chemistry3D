@@ -111,18 +111,15 @@ class Chem_Lab_Task_SL(BaseTask):
 
     # Information exposed to solve the task is returned from the task through get_observations
     def get_observations(self):
-        # cube_position, _ = self._cube.get_world_pose()
         current_joint_positions = self.Franka.get_joint_positions()
         beaker_Kmno4_position, _ = self._beaker_Kmno4.get_world_pose()
         beaker_Fecl2_position, _ = self._beaker_Fecl2.get_world_pose()
-        # beaker_Feo_position, _ = self._beaker_Feo.get_world_pose()
         kmno4_position, _ = self._kmno4.get_world_pose()
         kmno4_pour_position = np.add(beaker_Kmno4_position, self._pour0_offset)
         fecl2_position, _ = self._fecl2.get_world_pose()
         fecl2_pour_position = np.add(beaker_Fecl2_position, self._Fecl2_Bottle_Beaker_Pour_Offset)
-        # feo_position, _ = self._feo.get_world_pose()
         beaker_Kmno4_pour_position = np.add(beaker_Fecl2_position, self._pour1_offset)
-        # beaker_Fecl2_pour_position = np.add(beaker_Feo_position, self._pour1_offset)
+
         observations = {
             self.Franka.name: {
                 "joint_positions": current_joint_positions,
@@ -130,37 +127,33 @@ class Chem_Lab_Task_SL(BaseTask):
             self._beaker_Kmno4.name: {
                 "Default_Position": self._beaker_Kmno4_position,
                 "position": beaker_Kmno4_position,
-                "Pour_Position":beaker_Kmno4_pour_position,
+                "Pour_Position": beaker_Kmno4_pour_position,
+                "Return_Position": self._beaker_Kmno4_position + np.array([0, 0.02, 0]),
+                'Pour_Direction': -1,
             },
             self._beaker_Fecl2.name: {
                 "Default_Position": self._beaker_Fecl2_position,
                 "position": beaker_Fecl2_position,
-                # "Pour_Position":beaker_Fecl2_pour_position,
-                "Return_Position":self._beaker_Fecl2_Return_position
+                # "Pour_Position": beaker_Fecl2_pour_position,
+                "Return_Position": self._beaker_Fecl2_Return_position,
+                'Pour_Direction': -1,
             },
-            # self._beaker_Feo.name: {
-            #     "Default_Position": self._beaker_Feo_position,
-            #     "position": beaker_Feo_position,
-            # },
             self._kmno4.name: {
                 "Default_Position": self._Bottle_Kmno4_position,
                 "position": kmno4_position,
-                "Pour_Position":kmno4_pour_position,
-                "Return_Position": self._Bottle_Kmno4_position + + np.array([0.04, -0.02, 0]),
+                "Pour_Position": kmno4_pour_position,
+                "Return_Position": self._Bottle_Kmno4_position + np.array([0.04, -0.02, 0]),
+                'Pour_Direction': -1,
             },
             self._fecl2.name: {
                 "Default_Position": self._Bottle_Fecl2_position,
                 "position": fecl2_position,
-                "Pour_Position":fecl2_pour_position,
+                "Pour_Position": fecl2_pour_position,
+                "Return_Position": self._Bottle_Fecl2_position + np.array([0, -0.02, 0]),
+                'Pour_Direction': 1,
             }
-            # self._feo.name: {
-            #     "Default_Position": self._Feo_position,
-            #     "position": feo_position,
-            # }
         }
         return observations
-
-
 
     # Called before each physics step,
     # for instance we can check here if the task was accomplished by
