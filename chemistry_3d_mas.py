@@ -1,6 +1,6 @@
 # chemistry_3d_mas.py
 
-import omni  # Ensure this import is present
+import omni.kit.app
 from omni.isaac.examples.base_sample import BaseSample
 from omni.isaac.core import World
 from omni.isaac.examples.user_examples.LLM.mas_task import Chem_Lab_Task_SL
@@ -98,11 +98,6 @@ class Chemistry3DMAS(BaseSample):
         # Initialize the MAS system
         self.mas = MAS(world, self.controller_manager)
 
-        # Perform simulation updates (if needed)
-        # For this MAS implementation, we may rely on dynamic code generation
-        # Alternatively, we can directly call sim_update methods
-        # Here, we will proceed with direct calls as per chemistry_3d.py
-
         # Perform simulation updates
         self.Sim_Beaker_Kmno4.sim_update(self.Sim_Bottle_Kmno4, self.Franka, self.controller_manager)
         self.Sim_Beaker_Fecl2.sim_update(self.Sim_Bottle_Fecl2, self.Franka, self.controller_manager)
@@ -117,6 +112,84 @@ class Chemistry3DMAS(BaseSample):
 
         # Register physics callback
         world.add_physics_callback("sim_step", self.sim_step)
+
+    async def setup_pre_reset(self):
+        world = self.get_world()
+        # Remove physics callback
+        if world.physics_callback_exists("sim_step"):
+            world.remove_physics_callback("sim_step")
+        # Reset the controller manager
+        if self.controller_manager:
+            self.controller_manager.reset()
+
+    async def setup_post_reset(self):
+        world = self.get_world()
+        # Reset the world
+        await world.reset_async()
+        await world.pause_async()
+        # Wait for the stage to load
+        await omni.kit.app.get_app().next_update_async()
+
+        # Re-initialize the robot and objects
+        self.Franka = world.scene.get_object("Franka")
+        print(f"Franka after reset: {self.Franka}")
+        if self.Franka is None:
+            print("Franka robot not found in the scene after reset.")
+        self.mycamera = world.scene.get_object("camera")
+
+        # Re-initialize the controller manager
+        self.controller_manager = ControllerManager(world, self.Franka, self.Franka.gripper)
+
+        # Re-initialize simulation containers with specific properties
+        self.Sim_Bottle_Kmno4 = Sim_Container(
+            world=world,
+            sim_container=world.scene.get_object("Bottle_Kmno4"),
+            solute={'MnO4^-': 0.02, 'K^+': 0.02, 'H^+': 0.04, 'SO4^2-': 0.02},
+            volume=0.02
+        )
+        self.Sim_Bottle_Fecl2 = Sim_Container(
+            world=world,
+            sim_container=world.scene.get_object("Bottle_Fecl2"),
+            solute={'Fe^2+': 0.06, 'Cl^-': 0.12},
+            volume=0.02
+        )
+        self.Sim_Beaker_Kmno4 = Sim_Container(world=world, sim_container=world.scene.get_object("beaker_Kmno4"))
+        self.Sim_Beaker_Fecl2 = Sim_Container(world=world, sim_container=world.scene.get_object("beaker_Fecl2"))
+
+        # Re-initialize the MAS system
+        self.mas = MAS(world, self.controller_manager)
+
+        # Perform simulation updates
+        self.Sim_Beaker_Kmno4.sim_update(self.Sim_Bottle_Kmno4, self.Franka, self.controller_manager)
+        self.Sim_Beaker_Fecl2.sim_update(self.Sim_Bottle_Fecl2, self.Franka, self.controller_manager)
+        self.Sim_Beaker_Fecl2.sim_update(self.Sim_Beaker_Kmno4, self.Franka, self.controller_manager)
+
+        # Re-initialize variables
+        self.user_prompt = None
+        self.controllers_ready = False
+
+        # Start user input thread again
+        self.input_thread = threading.Thread(target=self.get_user_input)
+        self.input_thread.daemon = True
+        self.input_thread.start()
+
+        # Register physics callback again
+        world.add_physics_callback("sim_step", self.sim_step)
+
+    async def setup_post_clear(self):
+        # Clean up
+        self.controller_manager = None
+        self.Franka = None
+        self.mas = None
+        self.user_prompt = None
+        self.controllers_ready = False
+        self.utils = None
+        self.input_thread = None
+        self.mycamera = None
+        self.Sim_Bottle_Kmno4 = None
+        self.Sim_Bottle_Fecl2 = None
+        self.Sim_Beaker_Kmno4 = None
+        self.Sim_Beaker_Fecl2 = None
 
     def get_user_input(self):
         while True:
@@ -156,42 +229,6 @@ class Chemistry3DMAS(BaseSample):
                     world.pause()
                     self.controllers_ready = False  # Reset for next user prompt
                     self.user_prompt = None
-
-    async def setup_pre_reset(self):
-        world = self.get_world()
-        # Remove physics callback
-        if world.physics_callback_exists("sim_step"):
-            world.remove_physics_callback("sim_step")
-
-    async def setup_post_reset(self):
-        world = self.get_world()
-        # Reset the world
-        await world.reset_async()
-        await world.pause_async()
-        # Re-initialize variables
-        self.user_prompt = None
-        self.controllers_ready = False
-        # Start user input thread again
-        self.input_thread = threading.Thread(target=self.get_user_input)
-        self.input_thread.daemon = True
-        self.input_thread.start()
-        # Register physics callback again
-        world.add_physics_callback("sim_step", self.sim_step)
-
-    async def setup_post_clear(self):
-        # Clean up
-        self.controller_manager = None
-        self.Franka = None
-        self.mas = None
-        self.user_prompt = None
-        self.controllers_ready = False
-        self.utils = None
-        self.input_thread = None
-        self.mycamera = None
-        self.Sim_Bottle_Kmno4 = None
-        self.Sim_Bottle_Fecl2 = None
-        self.Sim_Beaker_Kmno4 = None
-        self.Sim_Beaker_Fecl2 = None
 
     async def on_start_simulation_async(self):
         world = self.get_world()
