@@ -132,7 +132,7 @@ class Chem_Lab_Task(BaseTask):
                 "position": beaker1_position,
                 "Pour_Position":beaker1_pour_position,
                 "Return_Position":self._Beaker1_position + np.array([0,0.02,0]),
-                'Pour_Derection': -1,
+                'Pour_Direction': -1,
             },
             self._Beaker2.name: {
                 "Default_Position": self._Beaker2_position,
@@ -145,14 +145,14 @@ class Chem_Lab_Task(BaseTask):
                 "position": bottle1_position,
                 "Pour_Position":bottle1_pour_position,
                 "Return_Position":self._Bottle1_position + np.array([0,0.02,0]),
-                'Pour_Derection': -1,
+                'Pour_Direction': -1,
             },
             self._Bottle2.name: {
                 "Default_Position": self._Bottle2_position,
                 "position": bottle2_position,
                 "Pour_Position":bottle2_pour_position,
                 "Return_Position":self._Bottle2_position + np.array([0,-0.02,0]),
-                'Pour_Derection': 1,
+                'Pour_Direction': 1,
             }
         }
         return observations

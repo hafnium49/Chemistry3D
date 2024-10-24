@@ -1,14 +1,14 @@
 Prompt: ```json
 {
-    "Controllers' Name": "Pouring Task",
-    "Task Description": "Control the robotic arm to pick up Sim_Bottle_Kmno4, pour it into Sim_Beaker_Kmno4, and then return Sim_Bottle_Kmno4 to its original position.",
-    "Code": "pickmove_controller = PickMoveController(name='pickmove_controller', cspace_controller=RMPFlowController(name='pickmove_cspace_controller', robot_articulation=Franka), gripper=Franka.gripper, speed=1.5)\npour_controller = PourController(name='pour_controller', cspace_controller=RMPFlowController(name='pour_cspace_controller', robot_articulation=Franka), gripper=Franka.gripper, Sim_Container1='Sim_Bottle_Kmno4', Sim_Container2='Sim_Beaker_Kmno4')\nreturn_controller = ReturnController(name='return_controller', cspace_controller=RMPFlowController(name='return_cspace_controller', robot_articulation=Franka), gripper=Franka.gripper, speed=1.5)"
+    "Controllers' Name": "Pour from Bottle_Kmno4 to Beaker_Kmno4",
+    "Task Description": "The task involves picking up the Sim_Bottle_Kmno4, pouring its contents into the Sim_Beaker_Kmno4, and then returning the bottle to its original position.",
+    "Code": "pickmove_controller = PickMoveController(name='pickmove_controller', cspace_controller=RMPFlowController(name='pickmove_cspace_controller', robot_articulation=Franka), gripper=Franka.gripper, speed = 1.5)\npour_controller = PourController(name='pour_controller', cspace_controller=RMPFlowController(name='pour_cspace_controller', robot_articulation=Franka), gripper=Franka.gripper, Sim_Container1=Sim_Bottle_Kmno4, Sim_Container2=Sim_Beaker_Kmno4)\nreturn_controller = ReturnController(name='return_controller', cspace_controller=RMPFlowController(name='return_cspace_controller', robot_articulation=Franka), gripper=Franka.gripper, speed = 1.5)"
 }
 ```
 ####################
 Response: ```json
-{
-    "Task Description": "The task involves controlling a robotic arm to first pick up a specific bottle (Sim_Bottle_Kmno4), pour its contents into a beaker (Sim_Beaker_Kmno4), and then return the bottle to its original position. This sequence ensures that the contents of the bottle are transferred precisely into the beaker without spillage and then the bottle is neatly replaced to maintain workspace organization.",
+{   
+    "Task Description": "The task involves picking up the Sim_Bottle_Kmno4, pouring its contents into the Sim_Beaker_Kmno4, and then returning the bottle to its original position. This sequence includes three actions: picking up the bottle, pouring the contents, and returning the bottle.",
     "Code": "controller_manager.add_controller('pickmove_controller', pickmove_controller)\ncontroller_manager.add_controller('pour_controller', pour_controller)\ncontroller_manager.add_controller('return_controller', return_controller)"
 }
 ```

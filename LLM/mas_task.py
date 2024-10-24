@@ -13,6 +13,8 @@ import os
 
 # Get the current directory
 current_directory = os.path.dirname(os.path.abspath(__file__)) #os.getcwd()
+# Get the parent directory
+current_directory = os.path.dirname(current_directory)
 
 class Chem_Lab_Task_SL(BaseTask):
     #NOTE: we only cover here a subset of the task functions that are available,
