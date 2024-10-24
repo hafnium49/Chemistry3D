@@ -1,14 +1,14 @@
 Prompt: ```json
 {
-    "Task Description": "The task is to control the robotic arm to pick up a specified object and move it to a designated position. This operation is crucial for tasks that require object manipulation, such as assembly or packaging.",
-    "Code": "controller_manager.add_controller('pickmove_controller', controller)"
+    "Task Description": "The task involves controlling a robotic arm to first pick up a specific bottle (Sim_Bottle_Kmno4), pour its contents into a beaker (Sim_Beaker_Kmno4), and then return the bottle to its original position. This sequence ensures that the contents of the bottle are transferred precisely into the beaker without spillage and then the bottle is neatly replaced to maintain workspace organization.",
+    "Code": "controller_manager.add_controller('pickmove_controller', pickmove_controller)\ncontroller_manager.add_controller('pour_controller', pour_controller)\ncontroller_manager.add_controller('return_controller', return_controller)"
 }
-```{'Franka': <omni.isaac.franka.franka.Franka object at 0x0000020E3D75EBC0>, 'Bottle_Kmno4': <omni.isaac.core.prims.geometry_prim.GeometryPrim object at 0x0000020EB10653C0>, 'beaker_Kmno4': <omni.isaac.core.prims.geometry_prim.GeometryPrim object at 0x0000020E8C9AC280>, 'Bottle_Fecl2': <omni.isaac.core.prims.geometry_prim.GeometryPrim object at 0x0000020EB3AABC70>, 'beaker_Fecl2': <omni.isaac.core.prims.geometry_prim.GeometryPrim object at 0x0000020E8D3A2E60>}
+```
 ####################
 Response: ```json
-{
-    "Task Description": "The task is to control the robotic arm to pick up the 'Bottle_Kmno4' and move it to a designated position near 'beaker_Kmno4'. This operation is crucial for tasks that require object manipulation, such as assembly or packaging.",
-    "Code": "controller_manager.add_controller('pickmove_controller', PickMoveController(name='pickmove_controller', cspace_controller=RMPFlowController(name='pickmove_cspace_controller', robot_articulation=Franka), gripper=Franka.gripper, speed=1.5))\ncontroller_manager.add_task('pickmove_controller', 'pick', {'picking_position': lambda obs: obs['Bottle_Kmno4']['position'], 'target_position': lambda obs: obs['beaker_Kmno4']['position'], 'current_joint_positions': lambda obs: Franka.get_joint_positions()})"
+{   
+    "Task Description":"The task involves controlling a robotic arm to first pick up a specific bottle (Sim_Bottle_Kmno4), pour its contents into a beaker (Sim_Beaker_Kmno4), and then return the bottle to its original position. This sequence ensures that the contents of the bottle are transferred precisely into the beaker without spillage and then the bottle is neatly replaced to maintain workspace organization.",
+    "Code": "controller_manager.add_task('pickmove_controller','pick',{'picking_position': lambda obs: obs['Sim_Bottle_Kmno4']['position'],'target_position': lambda obs: obs['Sim_Bottle_Kmno4']['Pour_Position'],'current_joint_positions': lambda obs: Franka.get_joint_positions()})\ncontroller_manager.add_task('pour_controller','pour',{'franka_art_controller': lambda obs: Franka.get_articulation_controller(), 'current_joint_positions': lambda obs: Franka.get_joint_positions(),'current_joint_velocities': lambda obs: Franka.get_joint_velocities(),'pour_speed': 55 / 180.0 * np.pi})\ncontroller_manager.add_task('return_controller','return',{'pour_position': lambda obs: obs['Sim_Bottle_Kmno4']['Pour_Position'],'return_position': lambda obs: np.array(obs['Sim_Bottle_Kmno4']['Return_Position']),'current_joint_positions': lambda obs: Franka.get_joint_positions()})"
 }
 ```
 

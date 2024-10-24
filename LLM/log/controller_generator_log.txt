@@ -1,18 +1,18 @@
-Prompt: 'observation: 'Franka: {'joint_positions': array([ 1.1999990e-02, -5.6998843e-01,  1.9326776e-09, -2.8100030e+00,
-        1.4067244e-07,  3.0369999e+00,  7.4099982e-01,  7.4420734e-03,
-        7.4420716e-03], dtype=float32)}
-beaker_Kmno4: {'Default_Position': array([-2.757, -1.34 ,  0.1  ]), 'position': array([-2.757, -1.34 ,  0.1  ], dtype=float32), 'Pour_Position': array([-2.71199995, -1.33900003,  0.191     ])}
-beaker_Fecl2: {'Default_Position': array([-2.652, -1.34 ,  0.1  ]), 'position': array([-2.652, -1.34 ,  0.1  ], dtype=float32), 'Return_Position': array([-2.97, -1.13,  0.1 ])}
-Bottle_Kmno4: {'Default_Position': array([-2.063, -1.34 ,  0.1  ]), 'position': array([-2.063, -1.34 ,  0.1  ], dtype=float32), 'Pour_Position': array([-2.67699997, -1.34000003,  0.225     ]), 'Return_Position': array([-2.023, -1.36 ,  0.1  ])}
-Bottle_Fecl2: {'Default_Position': array([-2.16, -1.34,  0.1 ]), 'position': array([-2.16, -1.34,  0.1 ], dtype=float32), 'Pour_Position': array([-2.72999995, -1.34000003,  0.225     ])}
+Prompt: 'observation: 'Franka: {'joint_positions': array([ 1.1999990e-02, -5.6999218e-01,  7.4776635e-10, -2.8100097e+00,
+        8.7286097e-08,  3.0369999e+00,  7.4100006e-01,  5.7493444e-03,
+        5.7493439e-03], dtype=float32)}
+beaker_Kmno4: {'Default_Position': array([-2.757, -1.34 ,  0.1  ]), 'position': array([-2.757     , -1.34      ,  0.09931875], dtype=float32), 'Pour_Position': array([-2.71199995, -1.33900003,  0.19031875])}
+beaker_Fecl2: {'Default_Position': array([-2.652, -1.34 ,  0.1  ]), 'position': array([-2.652     , -1.34      ,  0.09931875], dtype=float32), 'Return_Position': array([-2.97, -1.13,  0.1 ])}
+Bottle_Kmno4: {'Default_Position': array([-2.063, -1.34 ,  0.1  ]), 'position': array([-2.063     , -1.34      ,  0.09931875], dtype=float32), 'Pour_Position': array([-2.67699997, -1.34000003,  0.22431875]), 'Return_Position': array([-2.023, -1.36 ,  0.1  ])}
+Bottle_Fecl2: {'Default_Position': array([-2.16, -1.34,  0.1 ]), 'position': array([-2.16      , -1.34      ,  0.09931875], dtype=float32), 'Pour_Position': array([-2.72999995, -1.34000003,  0.22431875])}
 
-Grab the beaker.
+hi
 ####################
 Response: ```json
 {
-    "Controllers' Name": "PickMoveController",
-    "Task Description": "Controls to pick up a specified object and move it to a specific position.",
-    "Code": "controller = PickMoveController(name='pickmove_controller', cspace_controller=RMPFlowController(name='pickmove_cspace_controller1', robot_articulation=Franka), gripper=Franka.gripper, speed=1.5)"
+    "Controllers' Name": "Pouring Task",
+    "Task Description": "Control the robotic arm to pick up Sim_Bottle_Kmno4, pour it into Sim_Beaker_Kmno4, and then return Sim_Bottle_Kmno4 to its original position.",
+    "Code": "pickmove_controller = PickMoveController(name='pickmove_controller', cspace_controller=RMPFlowController(name='pickmove_cspace_controller', robot_articulation=Franka), gripper=Franka.gripper, speed=1.5)\npour_controller = PourController(name='pour_controller', cspace_controller=RMPFlowController(name='pour_cspace_controller', robot_articulation=Franka), gripper=Franka.gripper, Sim_Container1='Sim_Bottle_Kmno4', Sim_Container2='Sim_Beaker_Kmno4')\nreturn_controller = ReturnController(name='return_controller', cspace_controller=RMPFlowController(name='return_cspace_controller', robot_articulation=Franka), gripper=Franka.gripper, speed=1.5)"
 }
 ```
 
