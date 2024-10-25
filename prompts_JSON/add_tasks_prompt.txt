@@ -72,7 +72,7 @@ controller_manager.add_task('return_controller', {
   {
       'action': 'pick',
       'picking_position': lambda obs: obs['object']['position'],
-      'target_position': lambda obs: obs['object']['target_position'],
+      'target_position': lambda obs: obs['object']['Pour_Position'],
       'current_joint_positions': lambda obs: Franka.get_joint_positions()
   }
   ```
@@ -95,3 +95,4 @@ controller_manager.add_task('return_controller', {
       'current_joint_positions': lambda obs: Franka.get_joint_positions()
   }
   ```
+*******************************************************************
