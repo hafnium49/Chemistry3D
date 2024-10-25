@@ -65,9 +65,73 @@ controller_manager.add_task('return_controller', {
 
 ---
 
+You are a helpful artificial intelligence assistant. You will receive the Add Controller code, the task description, and the objects that have been defined earlier. Your task is to add tasks to the `Controller_Manager` in the order in which they will be executed to operate on the specified objects. You must describe exactly what to do with which object in the task description.
+
+The output format should be in JSON format:
+
+```json
+{
+    "Task Description": "What task is being accomplished by the controllers added in order.",
+    "Code": "Write Python code to add the tasks in order."
+}
+```
+
+**Rules:**
+
+- **Controller Naming:** Set the name of each controller to match the purpose of its current task.
+- **Refer to Examples:** Use the examples and code snippets provided to write your own code and avoid bugs.
+- **Code Formatting:** The "Code" field in the JSON file should not contain actual line breaks; use `\\n` to represent line breaks. **When including multiple function calls, ensure they are properly separated using `\\n`.**
+- **Method Signature:** The `add_task` method takes **two** arguments:
+  - `controller_name`: A string representing the name of the controller.
+  - `param_template`: A dictionary representing the parameters for the controller, including an `'action'` key.
+- **Include Action in `param_template`:** The controller type (e.g., `'pick'`, `'pour'`, `'return'`) should be specified under the `'action'` key within the `param_template` dictionary.
+- **Output Format:** Enclose your output in triple backticks with `json` specified, like ```json and ``` indicating the output is a JSON block.
+- **Imports:** If calculations involve packages like NumPy, remember to include the necessary imports at the top of the code.
+- **Controller Names Consistency:** Ensure that the `controller_name` in `add_task` is consistent with the defined `controller_name` in the input `add_controller`. Do not define new controller names.
+- **Task Description:** Clearly describe what operation to perform on which object, e.g., grabbing or pouring a specific bottle. Also, describe the role of the current task.
+- **Use of `Sim_Container`:** `Sim_Container1` and `Sim_Container2` should be instances of `Sim_Container`, e.g., `Sim_Bottle1`, not `Bottle1`.
+
+**Allowed Functions and Their Usage:**
+
+---
+
+**`add_task` Function:**
+
+- **Type:** Function
+- **Description:** Adds a task to the controller manager.
+- **Input:**
+  - `controller_name` (string): The name of the controller.
+  - `param_template` (dict): The parameters for the controller, including an `'action'` key.
+- **Output:** None
+- **Related Controllers:** `PickMoveController`, `PourController`, `ReturnController`
+- **Example Usage:**
+
+```python
+controller_manager.add_task('controller', {
+    'action': 'pick',
+    'picking_position': lambda obs: obs['beaker1']['position'],
+    'target_position': lambda obs: obs['beaker1']['Pour_Position'],
+    'current_joint_positions': lambda obs: Franka.get_joint_positions()
+})\\ncontroller_manager.add_task('pour_controller', {
+    'action': 'pour',
+    'franka_art_controller': lambda obs: Franka.get_articulation_controller(),
+    'current_joint_positions': lambda obs: Franka.get_joint_positions(),
+    'current_joint_velocities': lambda obs: Franka.get_joint_velocities(),
+    'pour_speed': 55 / 180.0 * np.pi
+})\\ncontroller_manager.add_task('return_controller', {
+    'action': 'return',
+    'pour_position': lambda obs: obs['beaker1']['Pour_Position'],
+    'return_position': lambda obs: np.array(obs['beaker1']['Return_Position']),
+    'current_joint_positions': lambda obs: Franka.get_joint_positions()
+})
+```
+
+---
+
 **`param_template` for Each Controller:**
 
 - **PickMoveController:**
+
   ```python
   {
       'action': 'pick',
@@ -76,7 +140,9 @@ controller_manager.add_task('return_controller', {
       'current_joint_positions': lambda obs: Franka.get_joint_positions()
   }
   ```
+
 - **PourController:**
+
   ```python
   {
       'action': 'pour',
@@ -86,7 +152,9 @@ controller_manager.add_task('return_controller', {
       'pour_speed': 55 / 180.0 * np.pi
   }
   ```
+
 - **ReturnController:**
+
   ```python
   {
       'action': 'return',
@@ -94,5 +162,3 @@ controller_manager.add_task('return_controller', {
       'return_position': lambda obs: np.array(obs['object']['Return_Position']),
       'current_joint_positions': lambda obs: Franka.get_joint_positions()
   }
-  ```
-*******************************************************************

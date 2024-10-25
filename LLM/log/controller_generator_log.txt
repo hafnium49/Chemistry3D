@@ -10,9 +10,9 @@ Pick up the left beaker.
 ####################
 Response: ```json
 {
-    "Controllers' Name": "Pick Left Beaker",
-    "Task Description": "This task involves picking up the left beaker using the Franka robot arm.",
-    "Code":"controller = PickMoveController(name='pickmove_controller', cspace_controller=RMPFlowController(name='pickmove_cspace_controller1', robot_articulation=Franka), gripper=Franka.gripper, speed=1.5)"
+    "Controllers' Name": "PickMoveController for picking up the left beaker",
+    "Task Description": "This task involves picking up the left beaker using the robotic arm.",
+    "Code": "controller = PickMoveController(name='pickmove_controller', cspace_controller=RMPFlowController(name='pickmove_cspace_controller1', robot_articulation=Franka), gripper=Franka.gripper, speed=1.5)"
 }
 ```
 
