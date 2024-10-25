@@ -1,14 +1,14 @@
 Prompt: ```json
-{
-    "Task Description": "Control the robot to pick up the left beaker which is beaker_Kmno4.",
-    "Code": "controller_manager.add_controller('pick_left_beaker_controller', controller)"
+{   
+    "Task Description":"The task is to pick up the beaker labeled 'Fecl2' using the Franka robot. The purpose of this controller is to perform the pick-up operation.",
+    "Code": "controller_manager.add_controller('Pick Beaker Controller', pickmove_controller)"
 }
 ```
 ####################
 Response: ```json
 {
-    "Task Description": "Pick up the left beaker which is beaker_Kmno4 and prepare it for further operations.",
-    "Code": "controller_manager.add_task('pick_left_beaker_controller', 'pick', {'picking_position': lambda obs: obs['beaker_Kmno4']['position'], 'target_position': lambda obs: obs['beaker_Kmno4']['Pour_Position'], 'current_joint_positions': lambda obs: Franka.get_joint_positions()})"
+    "Task Description": "Pick up the beaker labeled 'Fecl2' using the Franka robot. This task requires controlling the robotic arm to grasp the specified beaker.",
+    "Code": "controller_manager.add_task('Pick Beaker Controller', 'pick', {\"picking_position\": lambda obs: obs['Fecl2']['position'], \"target_position\": lambda obs: obs['Fecl2']['Pour_Position'], \"current_joint_positions\": lambda obs: Franka.get_joint_positions()})"
 }
 ```
 

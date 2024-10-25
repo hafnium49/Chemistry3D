@@ -6,13 +6,13 @@ beaker_Fecl2: {'Default_Position': array([-2.652, -1.34 ,  0.1  ]), 'position': 
 Bottle_Kmno4: {'Default_Position': array([-2.063, -1.34 ,  0.1  ]), 'position': array([-2.063     , -1.3399998 ,  0.09999993], dtype=float32), 'Pour_Position': array([-2.67699997, -1.34000003,  0.22499999]), 'Return_Position': array([-2.023, -1.36 ,  0.1  ]), 'Pour_Direction': -1}
 Bottle_Fecl2: {'Default_Position': array([-2.16, -1.34,  0.1 ]), 'position': array([-2.16      , -1.3399998 ,  0.09999993], dtype=float32), 'Pour_Position': array([-2.72999995, -1.33999979,  0.22499999]), 'Return_Position': array([-2.16, -1.36,  0.1 ]), 'Pour_Direction': 1}
 
-Pick the left beaker.
+Pick up the right beaker.
 ####################
 Response: ```json
 {
-    "Controllers' Name": "Pick Left Beaker",
-    "Task Description": "Control the robot to pick up the left beaker which is beaker_Kmno4.",
-    "Code": "controller = PickMoveController(name=\"pick_left_beaker_controller\", cspace_controller=RMPFlowController(name=\"pickmove_cspace_controller1\", robot_articulation=Franka), gripper=Franka.gripper, speed = 1.5)"
+    "Controllers' Name": "Pick Beaker Controller",
+    "Task Description": "Controller to pick up the beaker_Fecl2 using the Franka robot.",
+    "Code": "pickmove_controller = PickMoveController(name='pickmove_controller', cspace_controller=RMPFlowController(name='pickmove_cspace_controller1', robot_articulation=Franka), gripper=Franka.gripper, speed=1.5)"
 }
 ```
 
