@@ -1,14 +1,14 @@
 Prompt: ```json
 {
-    "Task Description": "The task involves picking up the beaker containing FeCl2, referred to as the 'right beaker'. This is crucial for experiments or processes involving the use of FeCl2.",
-    "Code": "controller_manager.add_controller('pickmove_controller', controller)"
+    "Task Description": "The task involves picking up the left beaker and moving it to a specified position, which is the first step in the process.",
+    "Code": "controller_manager.add_controller('Pick_Left_Beaker_Controller', controller)"
 }
 ```
 ####################
 Response: ```json
 {
-    "Task Description": "The task involves picking up the right beaker containing FeCl2, pouring its content into another container, and then returning the beaker to its original position. This sequence is critical for carrying out experiments or processes that require the use of FeCl2.",
-    "Code": "controller_manager.add_controller('pickmove_controller', controller)\\ncontroller_manager.add_task('pickmove_controller', 'pick', {\\n    'picking_position': lambda obs: obs['right_beaker']['position'],\\n    'target_position': lambda obs: obs['right_beaker']['Pour_Position'],\\n    'current_joint_positions': lambda obs: Franka.get_joint_positions()\\n})\\ncontroller_manager.add_task('pour_controller', 'pour', {\\n    'franka_art_controller': lambda obs: Franka.get_articulation_controller(),\\n    'current_joint_positions': lambda obs: Franka.get_joint_positions(),\\n    'current_joint_velocities': lambda obs: Franka.get_joint_velocities(),\\n    'pour_speed': 55 / 180.0 * np.pi\\n})\\ncontroller_manager.add_task('return_controller', 'return', {\\n    'pour_position': lambda obs: obs['right_beaker']['Pour_Position'],\\n    'return_position': lambda obs: np.array(obs['right_beaker']['Return_Position']),\\n    'current_joint_positions': lambda obs: Franka.get_joint_positions()\\n})"
+    "Task Description": "Pick up the left beaker and move it to a specified position as the first step in the process.",
+    "Code": "controller_manager.add_task('Pick_Left_Beaker_Controller', 'pick', {\"picking_position\": lambda obs: obs[\"beaker_left\"][\"position\"], \"target_position\": lambda obs: obs[\"beaker_left\"][\"target_position\"], \"current_joint_positions\": lambda obs: Franka.get_joint_positions()})"
 }
 ```
 

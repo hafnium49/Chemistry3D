@@ -125,7 +125,7 @@ class MAS:
         """
         user_prompt = controllers_str
         message = self.agent_planner.generate_response(user_prompt)
-        self.plan_steps_list = extract_scripts(message)
+        self.plan_steps_list = self.utils.extract_scripts(message)
         print(f'Number of generated plan steps: {len(self.plan_steps_list)}')
 
     def _debug_code(self, error_str, num_iter=3) -> bool:
