@@ -5,6 +5,7 @@ from omni.isaac.examples.user_examples.Chemistry3D_utils import *
 # from utils import *
 import traceback
 from dotenv import load_dotenv  # Import the load_dotenv function
+import json
 
 # Get the current directory
 current_directory = os.path.dirname(os.path.abspath(__file__)) #os.getcwd()
@@ -100,18 +101,42 @@ class AgentLLM:
                 f.write("\n")  # Add a newline for better readability
                 f.write(f"####################\n\n")
 
+    # def exec_code(self, code: str, global_dict: dict):
+    #     # Preprocess code by replacing \\n with \n
+    #     code = code.replace('  \\n  ', '\n').replace(' \\n ', '\n').replace('\\n', '\n')
+
+    #     try:
+    #         print(code)
+    #         exec(code, global_dict)
+    #         return True, ''
+    #     except Exception as e:
+    #         error_traceback = traceback.format_exc()
+    #         print(f"An error occurred: {e}")
+    #         return False, error_traceback
+
     def exec_code(self, code: str, global_dict: dict):
-        # Preprocess code by replacing \\n with \n
-        code = code.replace('  \\n  ', '\n').replace(' \\n ', '\n').replace('\\n', '\n')
+        # Preprocess code by replacing \\n with \n and removing code block markers
+        code = code.replace('  \\n  ', '\n').replace(' \\n ', '\n').replace('\\n', '\n').strip()
+        if code.startswith("```"):
+            code = code[3:].lstrip()
+            if code.startswith(('json', 'python')):
+                code = code.split('\n', 1)[1]
+        if code.endswith("```"):
+            code = code[:-3]
 
         try:
-            print(code)
-            exec(code, global_dict)
+            # Parse the JSON content
+            code_json = json.loads(code)
+            # Extract the code to execute
+            exec_code = code_json.get('Code', '')
+            print(exec_code)
+            exec(exec_code, global_dict)
             return True, ''
         except Exception as e:
             error_traceback = traceback.format_exc()
             print(f"An error occurred: {e}")
             return False, error_traceback
+
 
 if __name__ == "__main__":
     agent = AgentLLM("test_agent")
