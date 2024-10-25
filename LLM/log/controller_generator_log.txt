@@ -6,13 +6,13 @@ beaker_Fecl2: {'Default_Position': array([-2.652, -1.34 ,  0.1  ]), 'position': 
 Bottle_Kmno4: {'Default_Position': array([-2.063, -1.34 ,  0.1  ]), 'position': array([-2.063     , -1.3399998 ,  0.09999993], dtype=float32), 'Pour_Position': array([-2.67699997, -1.34000003,  0.22499999]), 'Return_Position': array([-2.023, -1.36 ,  0.1  ]), 'Pour_Direction': -1}
 Bottle_Fecl2: {'Default_Position': array([-2.16, -1.34,  0.1 ]), 'position': array([-2.16      , -1.3399998 ,  0.09999993], dtype=float32), 'Pour_Position': array([-2.72999995, -1.33999979,  0.22499999]), 'Return_Position': array([-2.16, -1.36,  0.1 ]), 'Pour_Direction': 1}
 
-hi
+Pick up the right beaker.
 ####################
 Response: ```json
 {
-    "Controllers' Name": "Pouring and Return Task",
-    "Task Description": "This series of controllers will handle picking up the Sim_Bottle_Kmno4, pouring it into the Sim_Beaker_Kmno4, and then returning the bottle to its original position.",
-    "Code": "pickmove_controller = PickMoveController(name='pickmove_controller', cspace_controller=RMPFlowController(name='pickmove_cspace_controller', robot_articulation=Franka), gripper=Franka.gripper, speed=1.5)\npour_controller = PourController(name='pour_controller', cspace_controller=RMPFlowController(name='pour_cspace_controller', robot_articulation=Franka), gripper=Franka.gripper, Sim_Container1=Bottle_Kmno4, Sim_Container2=beaker_Kmno4)\nreturn_controller = ReturnController(name='return_controller', cspace_controller=RMPFlowController(name='return_cspace_controller', robot_articulation=Franka), gripper=Franka.gripper, speed=1.5)"
+    "Controllers' Name": "Pick Beaker Task",
+    "Task Description": "Pick up the beaker containing FeCl2, which is the 'right beaker' in this context.",
+    "Code": "controller = PickMoveController(name=\"pickmove_controller\", cspace_controller=RMPFlowController(name=\"pickmove_cspace_controller1\", robot_articulation=Franka), gripper=Franka.gripper, speed = 1.5)"
 }
 ```
 

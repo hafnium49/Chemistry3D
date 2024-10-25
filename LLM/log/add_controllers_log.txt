@@ -1,15 +1,15 @@
 Prompt: ```json
 {
-    "Controllers' Name": "Pouring and Return Task",
-    "Task Description": "This series of controllers will handle picking up the Sim_Bottle_Kmno4, pouring it into the Sim_Beaker_Kmno4, and then returning the bottle to its original position.",
-    "Code": "pickmove_controller = PickMoveController(name='pickmove_controller', cspace_controller=RMPFlowController(name='pickmove_cspace_controller', robot_articulation=Franka), gripper=Franka.gripper, speed=1.5)\npour_controller = PourController(name='pour_controller', cspace_controller=RMPFlowController(name='pour_cspace_controller', robot_articulation=Franka), gripper=Franka.gripper, Sim_Container1=Bottle_Kmno4, Sim_Container2=beaker_Kmno4)\nreturn_controller = ReturnController(name='return_controller', cspace_controller=RMPFlowController(name='return_cspace_controller', robot_articulation=Franka), gripper=Franka.gripper, speed=1.5)"
+    "Controllers' Name": "Pick Beaker Task",
+    "Task Description": "Pick up the beaker containing FeCl2, which is the 'right beaker' in this context.",
+    "Code": "controller = PickMoveController(name=\"pickmove_controller\", cspace_controller=RMPFlowController(name=\"pickmove_cspace_controller1\", robot_articulation=Franka), gripper=Franka.gripper, speed = 1.5)"
 }
 ```
 ####################
 Response: ```json
 {
-    "Task Description": "This task involves three main actions: First, picking up the Sim_Bottle_Kmno4 using a robotic arm, then pouring its contents into the Sim_Beaker_Kmno4, and finally returning the Sim_Bottle_Kmno4 to its original position. The controllers work in sequence to achieve this task, ensuring precise handling and placement.",
-    "Code": "controller_manager.add_controller('pickmove_controller', pickmove_controller)\ncontroller_manager.add_controller('pour_controller', pour_controller)\ncontroller_manager.add_controller('return_controller', return_controller)"
+    "Task Description": "The task involves picking up the beaker containing FeCl2, referred to as the 'right beaker'. This is crucial for experiments or processes involving the use of FeCl2.",
+    "Code": "controller_manager.add_controller('pickmove_controller', controller)"
 }
 ```
 
