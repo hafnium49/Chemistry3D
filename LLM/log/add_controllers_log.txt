@@ -1,15 +1,15 @@
 Prompt: ```json
 {
-    "Controllers' Name": "Pick and Move Left Beaker",
-    "Task Description": "Controls to pick up the left beaker and move it to a specific position.",
-    "Code": "controller = PickMoveController(name='pickmove_controller', cspace_controller=RMPFlowController(name='pickmove_cspace_controller1', robot_articulation=Franka), gripper=Franka.gripper, speed=1.5)"
+    "Controllers' Name": "Pick up left beaker",
+    "Task Description": "Controls to pick up the beaker_Kmno4 and prepare for further actions.",
+    "Code": "pickmove_controller = PickMoveController(name='pickmove_controller', cspace_controller=RMPFlowController(name='pickmove_cspace_controller', robot_articulation=Franka), gripper=Franka.gripper, speed=1.5)"
 }
 ```
 ####################
 Response: ```json
 {
-    "Task Description": "The task involves controlling the robotic arm to pick up the left beaker and move it to a specific position. This is crucial for the subsequent steps in a laboratory setting where precise positioning of beakers is required for experiments or measurements.",
-    "Code": "controller_manager.add_controller('pickmove_controller', controller)"
+    "Task Description": "The task is to pick up the beaker_Kmno4 using the robotic arm and prepare it for subsequent actions. This is a critical step to ensure that the beaker is ready for any pouring or mixing operations that may follow.",
+    "Code": "controller_manager.add_controller('pickmove_controller', pickmove_controller)"
 }
 ```
 

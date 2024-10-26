@@ -13,6 +13,10 @@ from omni.isaac.examples.user_examples.LLM.mas import MAS
 from omni.isaac.examples.user_examples.Sim_Container import Sim_Container
 from pxr import Sdf, UsdPhysics, PhysxSchema
 
+# Get the current directory
+current_directory = os.path.dirname(os.path.abspath(__file__)) #os.getcwd()
+proposed_str_path = os.path.join(current_directory, 'LLM/Proposed_str')
+
 class Chemistry3DMAS(BaseSample):
     def __init__(self) -> None:
         super().__init__()
@@ -206,17 +210,17 @@ class Chemistry3DMAS(BaseSample):
                 print('Code generating...')
                 # Generate controllers based on the user prompt
                 controllers_str = self.mas._generate_controllers(self.user_prompt, current_observations)
-                with open('controllers_str.txt', 'w') as file:
+                with open(f'{proposed_str_path}/controllers_str.txt', 'w') as file:
                     file.write(controllers_str)
                 self.mas._generate_code_str(controllers_str)
                 self.mas._execute_code_str()
                 add_controllers_str = self.mas._add_controllers(controllers_str)
-                with open('add_controllers_str.txt', 'w') as file:
+                with open(f'{proposed_str_path}/add_controllers_str.txt', 'w') as file:
                     file.write(add_controllers_str)
                 self.mas._generate_code_str(add_controllers_str)
                 self.mas._execute_code_str()
                 add_tasks_str = self.mas._add_tasks(add_controllers_str)
-                with open('add_tasks_str.txt', 'w') as file:
+                with open(f'{proposed_str_path}/add_tasks_str.txt', 'w') as file:
                     file.write(add_tasks_str)
                 self.mas._generate_code_str(add_tasks_str)
                 self.mas._execute_code_str()
