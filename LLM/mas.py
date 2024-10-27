@@ -230,6 +230,22 @@ class MAS:
 
         return message
 
+    class AddTasks(BaseModel):
+        """
+        ```json
+        {
+            "Task Description": "Control the robotic arm to pick up beaker_Kmno4 using the Franka robot. Then pour the contents and return the beaker to its original position.",
+            "Code": "controller_manager.add_task('pickmove_controller', {\\n    'action': 'pick',\\n    'picking_position': lambda obs: obs['beaker_Kmno4']['position'],\\n    'target_position': lambda obs: obs['beaker_Kmno4']['Pour_Position'],\\n    'current_joint_positions': lambda obs: Franka.get_joint_positions()\\n})\\ncontroller_manager.add_task('pour_controller', {\\n    'action': 'pour',\\n    'franka_art_controller': lambda obs: Franka.get_articulation_controller(),\\n    'current_joint_positions': lambda obs: Franka.get_joint_positions(),\\n    'current_joint_velocities': lambda obs: Franka.get_joint_velocities(),\\n    'pour_speed': 55 / 180.0 * np.pi\\n})\\ncontroller_manager.add_task('return_controller', {\\n    'action': 'return',\\n    'pour_position': lambda obs: obs['beaker_Kmno4']['Pour_Position'],\\n    'return_position': lambda obs: np.array(obs['beaker_Kmno4']['Return_Position']),\\n    'current_joint_positions': lambda obs: Franka.get_joint_positions()\\n})"
+        }
+        ```
+        """
+        task_description: str = Field(alias="Task Description")
+        code: str = Field(alias="Code")
+
+        class Config:
+            populate_by_name = True
+
+
     def _add_tasks(self, controllers_str):
         """
         Add tasks for a given controller.
@@ -246,7 +262,7 @@ class MAS:
         # Generate response using the AddControllers model as the response format
         message = self.agent_add_tasks.generate_response(
             user_prompt,
-            response_format=self.AddControllers  # Corrected the typo here
+            response_format=self.AddTasks  # Corrected the typo here
         )
 
         return message
