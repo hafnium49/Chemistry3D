@@ -1,1 +1,1 @@
-task_description='Control the robotic arm to pick up beaker_Kmno4 using the Franka robot.' code="controller_manager.add_controller('pickmove_controller', pickmove_controller)"
+task_description='Control the robotic arm to pick up beaker_Kmno4 using the Franka robot.' code="controller_manager.add_controller('pickmove_controller', pickmove_controller)"task_description='Control the robotic arm to pick up beaker_Kmno4 using the Franka robot.' code="controller_manager.add_controller('pickmove_controller', pickmove_controller)"

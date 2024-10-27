@@ -235,12 +235,19 @@ class MAS:
         ```json
         {
             "Task Description": "Control the robotic arm to pick up beaker_Kmno4 using the Franka robot. Then pour the contents and return the beaker to its original position.",
-            "Code": "controller_manager.add_task('pickmove_controller', {\\n    'action': 'pick',\\n    'picking_position': lambda obs: obs['beaker_Kmno4']['position'],\\n    'target_position': lambda obs: obs['beaker_Kmno4']['Pour_Position'],\\n    'current_joint_positions': lambda obs: Franka.get_joint_positions()\\n})\\ncontroller_manager.add_task('pour_controller', {\\n    'action': 'pour',\\n    'franka_art_controller': lambda obs: Franka.get_articulation_controller(),\\n    'current_joint_positions': lambda obs: Franka.get_joint_positions(),\\n    'current_joint_velocities': lambda obs: Franka.get_joint_velocities(),\\n    'pour_speed': 55 / 180.0 * np.pi\\n})\\ncontroller_manager.add_task('return_controller', {\\n    'action': 'return',\\n    'pour_position': lambda obs: obs['beaker_Kmno4']['Pour_Position'],\\n    'return_position': lambda obs: np.array(obs['beaker_Kmno4']['Return_Position']),\\n    'current_joint_positions': lambda obs: Franka.get_joint_positions()\\n})"
+            "Step": ["controller_manager.add_task('pickmove_controller', {'action': 'pick', 'picking_position': lambda obs: obs['beaker_Kmno4']['position'], 'target_position': lambda obs: obs['beaker_Kmno4']['Pour_Position'], 'current_joint_positions': lambda obs: Franka.get_joint_positions()})", "controller_manager.add_task('pour_controller', {'action': 'pour', 'franka_art_controller': lambda obs: Franka.get_articulation_controller(), 'current_joint_positions': lambda obs: Franka.get_joint_positions(), 'current_joint_velocities': lambda obs: Franka.get_joint_velocities(), 'pour_speed': 55 / 180.0 * np.pi})", "controller_manager.add_task('return_controller', {'action': 'return', 'pour_position': lambda obs: obs['beaker_Kmno4']['Pour_Position'], 'return_position': lambda obs: np.array(obs['beaker_Kmno4']['Return_Position']), 'current_joint_positions': lambda obs: Franka.get_joint_positions()})"
         }
         ```
         """
+        class Step(BaseModel):
+            step_description: str = Field(alias="Step Description")
+            code: str = Field(alias="Code")
+
+            class Config:
+                populate_by_name = True
+
         task_description: str = Field(alias="Task Description")
-        code: str = Field(alias="Code")
+        step: list[Step] = Field(alias="Step")
 
         class Config:
             populate_by_name = True

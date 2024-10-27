@@ -151,15 +151,25 @@ class AgentLLM:
         #     exec_code = code.get('Code', '')
         elif isinstance(code, BaseModel):
             # Handle Pydantic models (GenerateControllers or AddControllers)
-            exec_code = code.code
+            exec_code = code.step
         else:
             print("Invalid code type")
             return False, "Invalid code type"
 
         try:
-            print(exec_code)
-            exec(exec_code, global_dict)
-            return True, ''
+            # if exec_code has string type
+            if isinstance(exec_code, str):
+                print(exec_code)
+                exec(exec_code, global_dict)
+                return True, ''
+            # if exec_code has list type
+            elif isinstance(exec_code, list):
+                for k, step in enumerate(exec_code):
+                    print(f"Step {k+1}: {step.step_description}\n{step.code}")
+                    exec(step.code, global_dict)
+                return True, ''
+            else:
+                return False, f"Invalid code type: {type(exec_code)}"
         except Exception as e:
             error_traceback = traceback.format_exc()
             print(f"An error occurred: {e}")
