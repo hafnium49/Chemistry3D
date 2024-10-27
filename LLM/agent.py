@@ -4,7 +4,7 @@ from openai import OpenAI, OpenAIError
 import os
 from datetime import datetime
 from omni.isaac.examples.user_examples.Chemistry3D_utils import *
-from omni.isaac.examples.user_examples.LLM.mas import GenerateControllers, AddControllers, AddTasks
+# from omni.isaac.examples.user_examples.LLM.mas import GenerateControllers, AddControllers, AddTasks
 import traceback
 from dotenv import load_dotenv
 import json
@@ -150,11 +150,16 @@ class AgentLLM:
                     exec_code = code_clean
         # elif isinstance(code, dict):
         #     exec_code = code.get('Code', '')
-        elif isinstance(code, AddTasks):
-            exec_code = code.step
-        elif isinstance(code, GenerateControllers or AddControllers):            
-            # Handle Pydantic models (GenerateControllers or AddControllers)
-            exec_code = code.code
+        elif isinstance(code, BaseModel):
+            try:
+                exec_code = code.step
+            except AttributeError:
+                try:
+                    # Handle Pydantic models (GenerateControllers or AddControllers)
+                    exec_code = code.code
+                except AttributeError:
+                    print("Invalid Pydantic model")
+                    return False, "Invalid Pydantic model"
         else:
             print("Invalid code type")
             return False, "Invalid code type"
