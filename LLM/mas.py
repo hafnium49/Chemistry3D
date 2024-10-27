@@ -104,8 +104,9 @@ class MAS:
         """
         Update system prompts for all agents.
         """
-        self.agent_add_controllers.load_system_prompt_from_file(PROMPTS_PATH + '/controller_generator_prompt.txt')
+        self.agent_controller_generator.load_system_prompt_from_file(PROMPTS_PATH + '/controller_generator_prompt.txt')
         self.agent_reaction_responser.load_system_prompt_from_file(PROMPTS_PATH + '/reaction_responser_prompt.txt')
+        self.agent_add_controllers.load_system_prompt_from_file(PROMPTS_PATH + '/add_controller_prompt.txt')
         self.agent_add_sim_containers.load_system_prompt_from_file(PROMPTS_PATH + '/add_sim_container_prompt.txt')
         self.agent_add_rigidbody.load_system_prompt_from_file(PROMPTS_PATH + '/add_rigid_body_prompt.txt')
         self.agent_add_particles.load_system_prompt_from_file(PROMPTS_PATH + '/add_particle_set_prompt.txt')
@@ -130,7 +131,9 @@ class MAS:
 
     def _debug_code(self, error_str, num_iter=3) -> bool:
         for i in range(num_iter):
-            debug_code_str = self.agent_debugger.generate_response(self.code_str + str(error_str))
+            user_prompt = self.code_str + str(error_str)
+            user_prompt += f"\n'observation: '{self.observation_str}"
+            debug_code_str = self.agent_debugger.generate_response(user_prompt)
             flag, error_str = self.agent_coder.exec_code(debug_code_str, self.coder_function_dict)
             if flag:
                 print("Debug successfully!")
@@ -201,6 +204,8 @@ class MAS:
             str: The response message.
         """
         user_prompt = controllers_str
+        user_prompt = f"'observation: '{self.observation_str}\n{user_prompt}"
+
         message = self.agent_add_controllers.generate_response(user_prompt)
         return message
 
@@ -215,6 +220,8 @@ class MAS:
             str: The response message.
         """
         user_prompt = controllers_str
+        user_prompt = f"'observation: '{self.observation_str}\n{user_prompt}"
+
         message = self.agent_add_tasks.generate_response(user_prompt)
         return message
 
@@ -230,7 +237,7 @@ class MAS:
             str: The response message.
         """
         self.observation_str = self._observations_to_string(observation)
-        instantiated_objects = f"'Instantiated objects: '{self.coder_function_dict}\\n"
+        # instantiated_objects = f"'Instantiated objects: '{self.coder_function_dict}\\n"
         total_prompt = f"'observation: '{self.observation_str}\n{prompt}"
 
         message = self.agent_controller_generator.generate_response(total_prompt)

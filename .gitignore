@@ -4,3 +4,4 @@
 *.backup
 *.env
 LLM/log/*
+LLM/Proposed_str/backup/*

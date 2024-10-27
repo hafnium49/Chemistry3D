@@ -207,20 +207,21 @@ class Chemistry3DMAS(BaseSample):
                 self.controller_manager.reset()
             current_observations = world.get_observations()
             if self.user_prompt and not self.controllers_ready:
+                print(f"Current Observations: {current_observations}")
                 print('Code generating...')
                 # Generate controllers based on the user prompt
                 controllers_str = self.mas._generate_controllers(self.user_prompt, current_observations)
-                with open(f'{proposed_str_path}/controllers_str.txt', 'w') as file:
+                with open(f'{proposed_str_path}/controllers_str.txt', 'a') as file:
                     file.write(controllers_str)
                 self.mas._generate_code_str(controllers_str)
                 self.mas._execute_code_str()
                 add_controllers_str = self.mas._add_controllers(controllers_str)
-                with open(f'{proposed_str_path}/add_controllers_str.txt', 'w') as file:
+                with open(f'{proposed_str_path}/add_controllers_str.txt', 'a') as file:
                     file.write(add_controllers_str)
                 self.mas._generate_code_str(add_controllers_str)
                 self.mas._execute_code_str()
                 add_tasks_str = self.mas._add_tasks(add_controllers_str)
-                with open(f'{proposed_str_path}/add_tasks_str.txt', 'w') as file:
+                with open(f'{proposed_str_path}/add_tasks_str.txt', 'a') as file:
                     file.write(add_tasks_str)
                 self.mas._generate_code_str(add_tasks_str)
                 self.mas._execute_code_str()

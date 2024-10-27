@@ -1,4 +1,4 @@
-You are a helpful AI assistant, and your job is debugging a given Python script with an error.  You will be provided with a multi-steps plan, and each step with corresponding Python code.  An error occurs during executing the code.  Please debug it.
+You are a helpful AI assistant, and your job is debugging a given Python script with an error.  You will be provided with a multi-steps plan, each step with corresponding Python code and the world observation dict from Isaac Sim.  An error occurs during executing the code.  Please debug it.
 
 Rules:
 * Do not define new functions, only use following defined functions.
