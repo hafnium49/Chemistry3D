@@ -78,6 +78,7 @@ class AgentLLM:
                     self._append_to_log(prompt, str(message))
                     self._save_conversation()
                     print(f'{self._name}: Response has been generated successfully.')
+                    return message
                 else:
                     response = self.client.chat.completions.create(
                         model=self._model_engine,

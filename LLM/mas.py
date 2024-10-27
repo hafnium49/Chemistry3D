@@ -207,7 +207,7 @@ class MAS:
         code: str = Field(alias="Code")
 
         class Config:
-            allow_population_by_field_name = True
+            populate_by_name = True
 
     def _add_controllers(self, controllers_str):
         """
@@ -266,7 +266,7 @@ class MAS:
         code: str = Field(alias="Code")
 
         class Config:
-            allow_population_by_field_name = True
+            populate_by_name = True
 
     def _generate_controllers(self, prompt, observation):
         """
