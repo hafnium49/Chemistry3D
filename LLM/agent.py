@@ -55,7 +55,7 @@ class AgentLLM:
     def get_name(self):
         return self._name
 
-    def generate_response(self, prompt, input_messages=None, retry_limit=3, max_tokens=10000, temperature=0.7, resonse_format=None):
+    def generate_response(self, prompt, input_messages=None, retry_limit=3, max_tokens=10000, temperature=0.7, response_format=None):
         attempts = 0
         while attempts < retry_limit:
             try:
@@ -66,13 +66,13 @@ class AgentLLM:
                     ]
                     prompt = input_messages[-1]["content"]
                 
-                if resonse_format:
+                if response_format:
                     response = self.client.beta.chat.completions.parse(
                         model=self._model_engine,
                         messages=input_messages,
                         max_tokens=max_tokens,
                         temperature=temperature,
-                        response_format=resonse_format
+                        response_format=response_format
                     )
                     message = response.choices[0].message.parsed
                     self._append_to_log(prompt, str(message))

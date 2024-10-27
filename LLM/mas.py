@@ -16,6 +16,7 @@ import numpy as np
 from pxr import Sdf, Gf, UsdPhysics
 from omni.isaac.examples.user_examples.Sim_Container import Sim_Container
 import traceback
+from pydantic import BaseModel, Field
 
 # Get the current directory
 current_directory = os.path.dirname(os.path.abspath(__file__))
@@ -193,6 +194,21 @@ class MAS:
         message = self.agent_add_rigidbody.generate_response(added_objects_dict_str)
         return message
 
+    class AddControllers(BaseModel):
+        """
+        ```json
+        {
+            "Task Description": "Control the robotic arm to pick up beaker_Kmno4 using the Franka robot.",
+            "Code": "controller_manager.add_controller('pickmove_controller', pickmove_controller)"
+        }
+        ```
+        """
+        task_description: str = Field(alias="Task Description")
+        code: str = Field(alias="Code")
+
+        class Config:
+            allow_population_by_field_name = True
+
     def _add_controllers(self, controllers_str):
         """
         Add controllers for a given task.
@@ -201,12 +217,17 @@ class MAS:
             controllers_str (str): The input string describing the controllers.
 
         Returns:
-            str: The response message.
+            AddControllers: The parsed response containing the code to execute.
         """
-        user_prompt = controllers_str
-        user_prompt = f"'observation: '{self.observation_str}\n{user_prompt}"
+        self.observation_str = self._observations_to_string(self._observation)
+        user_prompt = f"'observation: '{self.observation_str}\n{controllers_str}"
 
-        message = self.agent_add_controllers.generate_response(user_prompt)
+        # Generate response using the AddControllers model as the response format
+        message = self.agent_add_controllers.generate_response(
+            user_prompt,
+            response_format=self.AddControllers
+        )
+
         return message
 
     def _add_tasks(self, controllers_str):
@@ -217,13 +238,35 @@ class MAS:
             controllers_str (str): The input string describing the controllers.
 
         Returns:
-            str: The response message.
+            AddControllers: The parsed response containing the code to execute.
         """
-        user_prompt = controllers_str
-        user_prompt = f"'observation: '{self.observation_str}\n{user_prompt}"
+        self.observation_str = self._observations_to_string(self._observation)
+        user_prompt = f"'observation: '{self.observation_str}\n{controllers_str}"
 
-        message = self.agent_add_tasks.generate_response(user_prompt)
+        # Generate response using the AddControllers model as the response format
+        message = self.agent_add_tasks.generate_response(
+            user_prompt,
+            response_format=self.AddControllers  # Corrected the typo here
+        )
+
         return message
+
+    class GenerateControllers(BaseModel):
+        """
+        ```json
+        {
+            "Controllers' Name": "PickMoveController",
+            "Task Description": "Controls to pick up the left beaker, which is the beaker_Kmno4, and move it to a specific position.",
+            "Code": "pickmove_controller = PickMoveController(name='pickmove_controller', cspace_controller=RMPFlowController(name='pickmove_cspace_controller', robot_articulation=Franka), gripper=Franka.gripper, speed=1.5)"
+        }
+        ```
+        """
+        controllers_name: str = Field(alias="Controllers' Name")
+        task_description: str = Field(alias="Task Description")
+        code: str = Field(alias="Code")
+
+        class Config:
+            allow_population_by_field_name = True
 
     def _generate_controllers(self, prompt, observation):
         """
@@ -234,15 +277,16 @@ class MAS:
             observation (dict): The current observations.
 
         Returns:
-            str: The response message.
+            GenerateControllers: The generated controllers data.
         """
-        # define resonse_format
-
         self.observation_str = self._observations_to_string(observation)
-        # instantiated_objects = f"'Instantiated objects: '{self.coder_function_dict}\\n"
         total_prompt = f"'observation: '{self.observation_str}\n{prompt}"
 
-        message = self.agent_controller_generator.generate_response(total_prompt, resonse_format=resonse_format)
+        # Generate response using the GenerateControllers model as the response format
+        message = self.agent_controller_generator.generate_response(
+            total_prompt,
+            response_format=self.GenerateControllers
+        )
         return message
 
     def _observations_to_string(self, observation):
@@ -296,4 +340,3 @@ class MAS:
                 print("Failed to debug code.")
         # Clear code_str after execution
         self.code_str = ''
-
