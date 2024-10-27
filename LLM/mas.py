@@ -236,11 +236,13 @@ class MAS:
         Returns:
             str: The response message.
         """
+        # define resonse_format
+
         self.observation_str = self._observations_to_string(observation)
         # instantiated_objects = f"'Instantiated objects: '{self.coder_function_dict}\\n"
         total_prompt = f"'observation: '{self.observation_str}\n{prompt}"
 
-        message = self.agent_controller_generator.generate_response(total_prompt)
+        message = self.agent_controller_generator.generate_response(total_prompt, resonse_format=resonse_format)
         return message
 
     def _observations_to_string(self, observation):

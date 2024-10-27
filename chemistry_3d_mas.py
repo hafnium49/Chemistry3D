@@ -210,9 +210,10 @@ class Chemistry3DMAS(BaseSample):
                 print(f"Current Observations: {current_observations}")
                 print('Code generating...')
                 # Generate controllers based on the user prompt
-                controllers_str = self.mas._generate_controllers(self.user_prompt, current_observations)
+                controllers_dic = self.mas._generate_controllers(self.user_prompt, current_observations)
+                # controllers_str = self.mas._generate_controllers(self.user_prompt, current_observations)
                 with open(f'{proposed_str_path}/controllers_str.txt', 'a') as file:
-                    file.write(controllers_str)
+                    file.write(str(controllers_dic))
                 self.mas._generate_code_str(controllers_str)
                 self.mas._execute_code_str()
                 add_controllers_str = self.mas._add_controllers(controllers_str)

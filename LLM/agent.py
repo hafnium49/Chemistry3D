@@ -55,7 +55,7 @@ class AgentLLM:
     def get_name(self):
         return self._name
 
-    def generate_response(self, prompt, input_messages=None, retry_limit=3):
+    def generate_response(self, prompt, input_messages=None, retry_limit=3, max_tokens=10000, temperature=0.7, resonse_format=None):
         attempts = 0
         while attempts < retry_limit:
             try:
@@ -65,18 +65,31 @@ class AgentLLM:
                         {"role": "user", "content": prompt}
                     ]
                     prompt = input_messages[-1]["content"]
-
-                response = self.client.chat.completions.create(
-                    model=self._model_engine,
-                    messages=input_messages,
-                    max_tokens=1500,
-                    temperature=0.7
-                )
-                message = response.choices[0].message.content
-                self._append_to_log(prompt, message)
-                self._save_conversation()
-                print(f'{self._name}: Response has been generated successfully.')
-                return message.strip()
+                
+                if resonse_format:
+                    response = self.client.beta.chat.completions.parse(
+                        model=self._model_engine,
+                        messages=input_messages,
+                        max_tokens=max_tokens,
+                        temperature=temperature,
+                        response_format=resonse_format
+                    )
+                    message = response.choices[0].message.parsed
+                    self._append_to_log(prompt, str(message))
+                    self._save_conversation()
+                    print(f'{self._name}: Response has been generated successfully.')
+                else:
+                    response = self.client.chat.completions.create(
+                        model=self._model_engine,
+                        messages=input_messages,
+                        max_tokens=max_tokens,
+                        temperature=temperature
+                    )
+                    message = response.choices[0].message.content
+                    self._append_to_log(prompt, message)
+                    self._save_conversation()
+                    print(f'{self._name}: Response has been generated successfully.')
+                    return message.strip()
             except OpenAIError as e:
                 attempts += 1
                 print(f"Attempt {attempts}: An error occurred - {e}")
@@ -138,19 +151,25 @@ class AgentLLM:
     #         print(f"An error occurred: {e}")
     #         return False, error_traceback
 
-    def exec_code(self, code: str, global_dict: dict):
-        # Preprocess code by replacing \\n with \n and removing code block markers
-        code = code.replace('  \\n  ', '\n').replace(' \\n ', '\n').replace('\\n', '\n').strip()
-        if code.startswith("```"):
-            code = code[3:].lstrip()
-            if code.startswith(('json', 'python')):
-                code = code.split('\n', 1)[1]
-        if code.endswith("```"):
-            code = code[:-3]
-
-        try:
+    def exec_code(self, code: str | dict, global_dict: dict):
+        if isinstance(code, str):
+            # Preprocess code by replacing \\n with \n and removing code block markers
+            code = code.replace('  \\n  ', '\n').replace(' \\n ', '\n').replace('\\n', '\n').strip()
+            if code.startswith("```"):
+                code = code[3:].lstrip()
+                if code.startswith(('json', 'python')):
+                    code = code.split('\n', 1)[1]
+            if code.endswith("```"):
+                code = code[:-3]
             # Use ast.literal_eval to safely parse the code string
             code_dict = ast.literal_eval(code)
+        elif isinstance(code, dict):
+            code_dict = code
+        else:
+            print("Invalid code type")
+            return False, "Invalid code type"
+
+        try:
             # Extract the code to execute
             exec_code = code_dict.get('Code', '')
             print(exec_code)
