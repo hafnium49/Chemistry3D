@@ -3,4 +3,9 @@
     "Task Description": "Control the robotic arm to pick up beaker_Kmno4 using the Franka robot.",
     "Code": "controller_manager.add_controller('pickmove_controller', controller)"
 }
+``````json
+{   
+    "Task Description":"The task involves picking up the left beaker, which is the beaker_Kmno4, and moving it to a specific position using the PickMoveController. After positioning the beaker, the PourController will be responsible for pouring the contents from the Bottle_Kmno4 into the beaker_Kmno4, followed by returning the beaker to its original position using the ReturnController.",
+    "Code": "controller_manager.add_controller('pickmove_controller', pickmove_controller)\ncontroller_manager.add_controller('pour_controller', pour_controller)\ncontroller_manager.add_controller('return_controller', return_controller)"
+}
 ```

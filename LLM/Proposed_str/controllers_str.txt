@@ -4,4 +4,10 @@
     "Task Description": "Control the robotic arm to pick up the beaker_Kmno4.",
     "Code": "controller = PickMoveController(name='pickmove_controller', cspace_controller=RMPFlowController(name='pickmove_cspace_controller1', robot_articulation=Franka), gripper=Franka.gripper, speed=1.5)"
 }
+``````json
+{
+    "Controllers' Name": "PickMoveController",
+    "Task Description": "Controls to pick up the left beaker, which is the beaker_Kmno4, and move it to a specific position.",
+    "Code": "pickmove_controller = PickMoveController(name='pickmove_controller', cspace_controller=RMPFlowController(name='pickmove_cspace_controller', robot_articulation=Franka), gripper=Franka.gripper, speed=1.5)"
+}
 ```
