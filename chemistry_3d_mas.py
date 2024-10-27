@@ -212,20 +212,23 @@ class Chemistry3DMAS(BaseSample):
                 # Generate controllers based on the user prompt
                 controllers_dic = self.mas._generate_controllers(self.user_prompt, current_observations)
                 # controllers_str = self.mas._generate_controllers(self.user_prompt, current_observations)
-                with open(f'{proposed_str_path}/controllers_str.txt', 'a') as file:
+                with open(f'{proposed_str_path}/controllers_dic.txt', 'a') as file:
                     file.write(str(controllers_dic))
-                self.mas._generate_code_str(controllers_str)
-                self.mas._execute_code_str()
-                add_controllers_str = self.mas._add_controllers(controllers_str)
-                with open(f'{proposed_str_path}/add_controllers_str.txt', 'a') as file:
-                    file.write(add_controllers_str)
-                self.mas._generate_code_str(add_controllers_str)
-                self.mas._execute_code_str()
-                add_tasks_str = self.mas._add_tasks(add_controllers_str)
-                with open(f'{proposed_str_path}/add_tasks_str.txt', 'a') as file:
-                    file.write(add_tasks_str)
-                self.mas._generate_code_str(add_tasks_str)
-                self.mas._execute_code_str()
+                # self.mas._generate_code_str(controllers_str)
+                self.mas._execute_code_str(code=controllers_dic)
+
+                add_controllers_dic = self.mas._add_controllers(str(controllers_dic))
+                with open(f'{proposed_str_path}/add_controllers_dic.txt', 'a') as file:
+                    file.write(str(add_controllers_dic))
+                # self.mas._generate_code_str(add_controllers_str)
+                self.mas._execute_code_str(code=add_controllers_dic)
+
+                add_tasks_dic = self.mas._add_tasks(str(add_controllers_dic))
+                with open(f'{proposed_str_path}/add_tasks_dic.txt', 'a') as file:
+                    file.write(str(add_tasks_dic))
+                # self.mas._generate_code_str(add_tasks_str)
+                self.mas._execute_code_str(code=add_tasks_dic)
+
                 self.controllers_ready = True
                 print('Controllers executing...')
             if self.controllers_ready:

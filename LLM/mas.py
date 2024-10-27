@@ -326,11 +326,12 @@ class MAS:
             self.code_str = ''
         self.code_str += code_str + '\n'
 
-    def _execute_code_str(self):
+    def _execute_code_str(self, code=None):
         """
         Execute the stored code string.
         """
-        code = self.code_str
+        if not code:
+            code = self.code_str
         flag, error_str = self.agent_coder.exec_code(code, self.coder_function_dict)
         if not flag:
             # Handle error, perhaps debug
