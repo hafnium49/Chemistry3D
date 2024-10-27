@@ -26,6 +26,61 @@ parent_directory = os.path.dirname(current_directory)
 PROMPTS_PATH = f'{parent_directory}/prompts_JSON'
 LOG_PATH = f'{current_directory}/log'
 
+class GenerateControllers(BaseModel):
+    """
+    ```json
+    {
+        "Controllers' Name": "PickMoveController",
+        "Task Description": "Controls to pick up the left beaker, which is the beaker_Kmno4, and move it to a specific position.",
+        "Code": "pickmove_controller = PickMoveController(name='pickmove_controller', cspace_controller=RMPFlowController(name='pickmove_cspace_controller', robot_articulation=Franka), gripper=Franka.gripper, speed=1.5)"
+    }
+    ```
+    """
+    controllers_name: str = Field(alias="Controllers' Name")
+    task_description: str = Field(alias="Task Description")
+    code: str = Field(alias="Code")
+
+    class Config:
+        populate_by_name = True
+
+class AddControllers(BaseModel):
+    """
+    ```json
+    {
+        "Task Description": "Control the robotic arm to pick up beaker_Kmno4 using the Franka robot.",
+        "Code": "controller_manager.add_controller('pickmove_controller', pickmove_controller)"
+    }
+    ```
+    """
+    task_description: str = Field(alias="Task Description")
+    code: str = Field(alias="Code")
+
+    class Config:
+        populate_by_name = True
+
+class Step(BaseModel):
+    step_description: str = Field(alias="Step Description")
+    code: str = Field(alias="Code")
+
+    class Config:
+        populate_by_name = True
+
+class AddTasks(BaseModel):
+    """
+    ```json
+    {
+        "Task Description": "Control the robotic arm to pick up beaker_Kmno4 using the Franka robot. Then pour the contents and return the beaker to its original position.",
+        "Step": ["controller_manager.add_task('pickmove_controller', {'action': 'pick', 'picking_position': lambda obs: obs['beaker_Kmno4']['position'], 'target_position': lambda obs: obs['beaker_Kmno4']['Pour_Position'], 'current_joint_positions': lambda obs: Franka.get_joint_positions()})", "controller_manager.add_task('pour_controller', {'action': 'pour', 'franka_art_controller': lambda obs: Franka.get_articulation_controller(), 'current_joint_positions': lambda obs: Franka.get_joint_positions(), 'current_joint_velocities': lambda obs: Franka.get_joint_velocities(), 'pour_speed': 55 / 180.0 * np.pi})", "controller_manager.add_task('return_controller', {'action': 'return', 'pour_position': lambda obs: obs['beaker_Kmno4']['Pour_Position'], 'return_position': lambda obs: np.array(obs['beaker_Kmno4']['Return_Position']), 'current_joint_positions': lambda obs: Franka.get_joint_positions()})"
+    }
+    ```
+    """
+
+    task_description: str = Field(alias="Task Description")
+    step: list[Step] = Field(alias="Step")
+
+    class Config:
+        populate_by_name = True
+
 class MAS:
     """
     Multi-Agent System (MAS) for managing and simulating chemical reactions and robotics control in a simulated environment.
@@ -194,21 +249,6 @@ class MAS:
         message = self.agent_add_rigidbody.generate_response(added_objects_dict_str)
         return message
 
-    class AddControllers(BaseModel):
-        """
-        ```json
-        {
-            "Task Description": "Control the robotic arm to pick up beaker_Kmno4 using the Franka robot.",
-            "Code": "controller_manager.add_controller('pickmove_controller', pickmove_controller)"
-        }
-        ```
-        """
-        task_description: str = Field(alias="Task Description")
-        code: str = Field(alias="Code")
-
-        class Config:
-            populate_by_name = True
-
     def _add_controllers(self, controllers_str):
         """
         Add controllers for a given task.
@@ -225,33 +265,10 @@ class MAS:
         # Generate response using the AddControllers model as the response format
         message = self.agent_add_controllers.generate_response(
             user_prompt,
-            response_format=self.AddControllers
+            response_format=AddControllers
         )
 
         return message
-
-    class AddTasks(BaseModel):
-        """
-        ```json
-        {
-            "Task Description": "Control the robotic arm to pick up beaker_Kmno4 using the Franka robot. Then pour the contents and return the beaker to its original position.",
-            "Step": ["controller_manager.add_task('pickmove_controller', {'action': 'pick', 'picking_position': lambda obs: obs['beaker_Kmno4']['position'], 'target_position': lambda obs: obs['beaker_Kmno4']['Pour_Position'], 'current_joint_positions': lambda obs: Franka.get_joint_positions()})", "controller_manager.add_task('pour_controller', {'action': 'pour', 'franka_art_controller': lambda obs: Franka.get_articulation_controller(), 'current_joint_positions': lambda obs: Franka.get_joint_positions(), 'current_joint_velocities': lambda obs: Franka.get_joint_velocities(), 'pour_speed': 55 / 180.0 * np.pi})", "controller_manager.add_task('return_controller', {'action': 'return', 'pour_position': lambda obs: obs['beaker_Kmno4']['Pour_Position'], 'return_position': lambda obs: np.array(obs['beaker_Kmno4']['Return_Position']), 'current_joint_positions': lambda obs: Franka.get_joint_positions()})"
-        }
-        ```
-        """
-        class Step(BaseModel):
-            step_description: str = Field(alias="Step Description")
-            code: str = Field(alias="Code")
-
-            class Config:
-                populate_by_name = True
-
-        task_description: str = Field(alias="Task Description")
-        step: list[Step] = Field(alias="Step")
-
-        class Config:
-            populate_by_name = True
-
 
     def _add_tasks(self, controllers_str):
         """
@@ -269,27 +286,10 @@ class MAS:
         # Generate response using the AddControllers model as the response format
         message = self.agent_add_tasks.generate_response(
             user_prompt,
-            response_format=self.AddTasks  # Corrected the typo here
+            response_format=AddTasks  # Corrected the typo here
         )
 
         return message
-
-    class GenerateControllers(BaseModel):
-        """
-        ```json
-        {
-            "Controllers' Name": "PickMoveController",
-            "Task Description": "Controls to pick up the left beaker, which is the beaker_Kmno4, and move it to a specific position.",
-            "Code": "pickmove_controller = PickMoveController(name='pickmove_controller', cspace_controller=RMPFlowController(name='pickmove_cspace_controller', robot_articulation=Franka), gripper=Franka.gripper, speed=1.5)"
-        }
-        ```
-        """
-        controllers_name: str = Field(alias="Controllers' Name")
-        task_description: str = Field(alias="Task Description")
-        code: str = Field(alias="Code")
-
-        class Config:
-            populate_by_name = True
 
     def _generate_controllers(self, prompt, observation):
         """
@@ -308,7 +308,7 @@ class MAS:
         # Generate response using the GenerateControllers model as the response format
         message = self.agent_controller_generator.generate_response(
             total_prompt,
-            response_format=self.GenerateControllers
+            response_format=GenerateControllers
         )
         return message
 
