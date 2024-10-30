@@ -94,8 +94,8 @@ class Chemistry3D(BaseSample):
 
         # Perform simulation updates
         self.Sim_Beaker1.sim_update(self.Sim_Bottle1, self.Franka0, self.controller_manager)
-        self.Sim_Beaker2.sim_update(self.Sim_Bottle2, self.Franka0, self.controller_manager)
-        self.Sim_Beaker2.sim_update(self.Sim_Beaker1, self.Franka0, self.controller_manager)
+        # self.Sim_Beaker2.sim_update(self.Sim_Bottle2, self.Franka0, self.controller_manager)
+        # self.Sim_Beaker2.sim_update(self.Sim_Beaker1, self.Franka0, self.controller_manager)
 
     def _on_simulation_step(self, step_size):
         world = self.get_world()
