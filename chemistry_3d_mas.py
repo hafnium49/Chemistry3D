@@ -164,9 +164,9 @@ class Chemistry3DMAS(BaseSample):
         self.mas = MAS(world, self.controller_manager)
 
         # Perform simulation updates
-        self.Sim_Beaker_Kmno4.sim_update(self.Sim_Bottle_Kmno4, self.Franka, self.controller_manager)
-        self.Sim_Beaker_Fecl2.sim_update(self.Sim_Bottle_Fecl2, self.Franka, self.controller_manager)
-        self.Sim_Beaker_Fecl2.sim_update(self.Sim_Beaker_Kmno4, self.Franka, self.controller_manager)
+        # self.Sim_Beaker_Kmno4.sim_update(self.Sim_Bottle_Kmno4, self.Franka, self.controller_manager)
+        # self.Sim_Beaker_Fecl2.sim_update(self.Sim_Bottle_Fecl2, self.Franka, self.controller_manager)
+        # self.Sim_Beaker_Fecl2.sim_update(self.Sim_Beaker_Kmno4, self.Franka, self.controller_manager)
 
         # Re-initialize variables
         self.user_prompt = None
@@ -213,13 +213,13 @@ class Chemistry3DMAS(BaseSample):
                 controllers_dic = self.mas._generate_controllers(self.user_prompt, current_observations)
                 # controllers_str = self.mas._generate_controllers(self.user_prompt, current_observations)
                 with open(f'{proposed_str_path}/controllers_dic.txt', 'a') as file:
-                    file.write(str(controllers_dic))
+                    file.write("\n\n"+str(controllers_dic))
                 # self.mas._generate_code_str(controllers_str)
                 self.mas._execute_code_str(code=controllers_dic)
 
                 add_controllers_dic = self.mas._add_controllers(str(controllers_dic))
                 with open(f'{proposed_str_path}/add_controllers_dic.txt', 'a') as file:
-                    file.write(str(add_controllers_dic))
+                    file.write("\n\n"+str(add_controllers_dic))
                 # self.mas._generate_code_str(add_controllers_str)
                 self.mas._execute_code_str(code=add_controllers_dic)
 
@@ -234,6 +234,9 @@ class Chemistry3DMAS(BaseSample):
             if self.controllers_ready:
                 # Execute the controller manager
                 self.controller_manager.execute(current_observations=current_observations)
+                self.controller_manager.process_concentration_iters()
+                if self.controller_manager.need_new_liquid():
+                    self.controller_manager.get_current_controller()._get_sim_container2().create_liquid(self.controller_manager, current_observations)
                 if self.controller_manager.is_done():
                     world.pause()
                     self.controllers_ready = False  # Reset for next user prompt

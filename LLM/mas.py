@@ -260,7 +260,7 @@ class MAS:
             AddControllers: The parsed response containing the code to execute.
         """
         self.observation_str = self._observations_to_string(self._observation)
-        user_prompt = f"'observation: '{self.observation_str}\n{controllers_str}"
+        user_prompt = f"'observation: '{self.observation_str}\n\ngenerate controller code: {controllers_str}"
 
         # Generate response using the AddControllers model as the response format
         message = self.agent_add_controllers.generate_response(
@@ -281,7 +281,7 @@ class MAS:
             AddControllers: The parsed response containing the code to execute.
         """
         self.observation_str = self._observations_to_string(self._observation)
-        user_prompt = f"'observation: '{self.observation_str}\n{controllers_str}"
+        user_prompt = f"'observation: '{self.observation_str}\n\nadd controller code: {controllers_str}"
 
         # Generate response using the AddControllers model as the response format
         message = self.agent_add_tasks.generate_response(
@@ -303,7 +303,7 @@ class MAS:
             GenerateControllers: The generated controllers data.
         """
         self.observation_str = self._observations_to_string(observation)
-        total_prompt = f"'observation: '{self.observation_str}\n{prompt}"
+        total_prompt = f"'observation: '{self.observation_str}\n\n user input: {prompt}"
 
         # Generate response using the GenerateControllers model as the response format
         message = self.agent_controller_generator.generate_response(

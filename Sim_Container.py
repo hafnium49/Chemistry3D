@@ -6,7 +6,6 @@ from pxr import Gf,Sdf
 from omni.isaac.examples.user_examples.Controllers.Controller_Manager import ControllerManager
 from omni.isaac.examples.user_examples.Controllers.pick_move_controller import PickMoveController
 from omni.isaac.examples.user_examples.Controllers.return_controller import PlaceController
-from omni.isaac.examples.user_examples.Controllers.pour_controller import PourController
 from omni.isaac.examples.user_examples.Chemistry3D_utils import Utils
 # from utils import Utils
 from omni.isaac.examples.user_examples.Chemistry3D_utils import *
@@ -85,7 +84,8 @@ class Sim_Container(Container):
             gripper=robot.gripper,
             speed=1.5
         )
-
+        
+        from omni.isaac.examples.user_examples.Controllers.pour_controller import PourController
         pour_controller = PourController(
             name="pour_controller",
             cspace_controller=RMPFlowController(name="pour_cspace_controller", robot_articulation=robot),
