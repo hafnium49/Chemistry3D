@@ -63,7 +63,6 @@ controller_manager.add_task("return_controller", {"action": "return", "pour_posi
 
 ```python
 {
-    "action": "pick",
     "picking_position": lambda obs: obs["object"]["position"],
     "target_position": lambda obs: obs["object"]["Pour_Position"],
     "current_joint_positions": lambda obs: Franka.get_joint_positions()
@@ -74,7 +73,6 @@ controller_manager.add_task("return_controller", {"action": "return", "pour_posi
 
 ```python
 {
-    "action": "pour",
     "franka_art_controller": lambda obs: Franka.get_articulation_controller(),
     "current_joint_positions": lambda obs: Franka.get_joint_positions(),
     "current_joint_velocities": lambda obs: Franka.get_joint_velocities(),
@@ -86,7 +84,6 @@ controller_manager.add_task("return_controller", {"action": "return", "pour_posi
 
 ```python
 {
-    "action": "return",
     "pour_position": lambda obs: obs["object"]["Pour_Position"],
     "return_position": lambda obs: np.array(obs["object"]["Return_Position"]),
     "current_joint_positions": lambda obs: Franka.get_joint_positions()
@@ -107,15 +104,15 @@ controller_manager.add_task("return_controller", {"action": "return", "pour_posi
     "Step": [
         {
             "Step Description": "Use the pickmove_controller to pick up beaker_Kmno4 and move it to the pouring position.",
-            "Code": "controller_manager.add_task('pickmove_controller', {'action': 'pick', 'picking_position': lambda obs: obs['beaker_Kmno4']['position'], 'target_position': lambda obs: obs['beaker_Kmno4']['Pour_Position'], 'current_joint_positions': lambda obs: Franka.get_joint_positions()})"
+            "Code": "controller_manager.add_task('pickmove_controller', {'picking_position': lambda obs: obs['beaker_Kmno4']['position'], 'target_position': lambda obs: obs['beaker_Kmno4']['Pour_Position'], 'current_joint_positions': lambda obs: Franka.get_joint_positions()})"
         },
         {
             "Step Description": "Use the pour_controller to pour the contents of beaker_Kmno4.",
-            "Code": "controller_manager.add_task('pour_controller', {'action': 'pour', 'franka_art_controller': lambda obs: Franka.get_articulation_controller(), 'current_joint_positions': lambda obs: Franka.get_joint_positions(), 'current_joint_velocities': lambda obs: Franka.get_joint_velocities(), 'pour_speed': 55 / 180.0 * np.pi})"
+            "Code": "controller_manager.add_task('pour_controller', {'franka_art_controller': lambda obs: Franka.get_articulation_controller(), 'current_joint_positions': lambda obs: Franka.get_joint_positions(), 'current_joint_velocities': lambda obs: Franka.get_joint_velocities(), 'pour_speed': 55 / 180.0 * np.pi})"
         },
         {
             "Step Description": "Use the return_controller to return beaker_Kmno4 to its original position.",
-            "Code": "controller_manager.add_task('return_controller', {'action': 'return', 'pour_position': lambda obs: obs['beaker_Kmno4']['Pour_Position'], 'return_position': lambda obs: np.array(obs['beaker_Kmno4']['Return_Position']), 'current_joint_positions': lambda obs: Franka.get_joint_positions()})"
+            "Code": "controller_manager.add_task('return_controller', {'pour_position': lambda obs: obs['beaker_Kmno4']['Pour_Position'], 'return_position': lambda obs: np.array(obs['beaker_Kmno4']['Return_Position']), 'current_joint_positions': lambda obs: Franka.get_joint_positions()})"
         }
     ]
 }
