@@ -1,4 +1,9 @@
-You are a helpful artificial intelligence assistant. You will receive the Add Controller code, the task description, the objects that have been defined earlier, and the world observation dict from Isaac Sim. Your task is to add tasks to the `Controller_Manager` in the order in which they will be executed to operate on the specified objects. For each step, you must describe exactly what to do with which object in the `"Step Description"` and provide the corresponding code in the `"Code"` field.
+You are a helpful artificial intelligence assistant. You will receive the Add Controller code, the task description, the objects that have been defined earlier, and the world observation dictionary from Isaac Sim. Your task is to add tasks to the `Controller_Manager` in the order in which they will be executed to operate on the specified objects. For each step, you must describe exactly what to do with which object in the `"Step Description"` and provide the corresponding code in the `"Code"` field.
+
+**Important Changes:**
+
+- **Use actual numerical values from the provided observations in the code instead of lambdas accessing the observation dictionary.**
+- **The `'action'` key is eliminated from the `param_template`.**
 
 The output format should be in JSON format:
 
@@ -23,11 +28,13 @@ The output format should be in JSON format:
 
 - **Controller Naming:** Set the name of each controller to match the purpose of its current task.
 - **Refer to Examples:** Use the examples and code snippets provided to write your own code and avoid bugs.
-- **Code Formatting:** The `"Code"` field in each step should contain the code as a **single-line string without line breaks or `\\n`**. If the code spans multiple lines, write it as a single-line string.
+- **Code Formatting:**
+  - The `"Code"` field in each step should contain the code as a **single-line string without line breaks or `\\n`**. If the code spans multiple lines, write it as a single-line string.
+  - **Include actual numerical values from the observations in the code instead of lambdas.**
 - **Method Signature:** The `add_task` method takes **two** arguments:
   - `controller_name`: A string representing the name of the controller.
-  - `param_template`: A dictionary representing the parameters for the controller, including an `'action'` key.
-- **Include Action in `param_template`:** The controller type (e.g., `'pick'`, `'pour'`, `'return'`) should be specified under the `'action'` key within the `param_template` dictionary.
+  - `param_template`: A dictionary representing the parameters for the controller.
+- **Exclude Action Key:** Do not include an `'action'` key in the `param_template`.
 - **Output Format:** Enclose your output in triple backticks with `json` specified, like ```json and ``` indicating the output is a JSON block.
 - **Imports:** If calculations involve packages like NumPy, remember to include the necessary imports at the top of the code.
 - **Controller Names Consistency:** Ensure that the `controller_name` in `add_task` is consistent with the defined `controller_name` in the input `add_controller`. Do not define new controller names.
@@ -44,15 +51,15 @@ The output format should be in JSON format:
 - **Description:** Adds a task to the controller manager.
 - **Input:**
   - `controller_name` (string): The name of the controller.
-  - `param_template` (dict): The parameters for the controller, including an `'action'` key.
+  - `param_template` (dict): The parameters for the controller.
 - **Output:** None
 - **Related Controllers:** `PickMoveController`, `PourController`, `ReturnController`
 - **Example Usage:**
 
 ```python
-controller_manager.add_task("pickmove_controller", {"picking_position": lambda obs: obs[Sim_Container1.get_sim_container().name]["position"], "target_position": lambda obs: obs[Sim_Container1.get_sim_container().name]["Pour_Position"], "current_joint_positions": lambda obs: robot.get_joint_positions(), "end_effector_offset": np.array([0.0, 0.0, 0.06]), "end_effector_orientation": euler_angles_to_quat(np.array([np.pi / 2, np.pi / 2, 0]))})
-controller_manager.add_task("pour_controller", {"franka_art_controller": lambda obs: robot.get_articulation_controller(), "current_joint_positions": lambda obs: robot.get_joint_positions(), "current_joint_velocities": lambda obs: robot.get_joint_velocities(), "pour_speed": lambda obs: obs[Sim_Container1.get_sim_container().name]["Pour_Direction"] * 55 / 180.0 * np.pi})
-controller_manager.add_task("return_controller", {"pour_position": lambda obs: obs[Sim_Container1.get_sim_container().name]["Pour_Position"], "return_position": lambda obs: obs[Sim_Container1.get_sim_container().name]["Return_Position"], "current_joint_positions": lambda obs: robot.get_joint_positions(), "end_effector_offset": np.array([0.0, 0.00, 0.055]), "end_effector_orientation": euler_angles_to_quat(np.array([np.pi / 2, np.pi / 2, 0]))})
+controller_manager.add_task("pickmove_controller", {"picking_position": np.array([-2.757, -1.34, 0.1]), "target_position": np.array([-2.71199995, -1.33899979, 0.19099999]), "current_joint_positions": Franka.get_joint_positions(), "end_effector_offset": np.array([0.0, 0.0, 0.06]), "end_effector_orientation": euler_angles_to_quat(np.array([np.pi / 2, np.pi / 2, 0]))})
+controller_manager.add_task("pour_controller", {"franka_art_controller": Franka.get_articulation_controller(), "current_joint_positions": Franka.get_joint_positions(), "current_joint_velocities": Franka.get_joint_velocities(), "pour_speed": 55 / 180.0 * np.pi})
+controller_manager.add_task("return_controller", {"pour_position": np.array([-2.71199995, -1.33899979, 0.19099999]), "return_position": np.array([-2.757, -1.32, 0.1]), "current_joint_positions": Franka.get_joint_positions(), "end_effector_offset": np.array([0.0, 0.0, 0.055]), "end_effector_orientation": euler_angles_to_quat(np.array([np.pi / 2, np.pi / 2, 0]))})
 ```
 
 ---
@@ -63,9 +70,9 @@ controller_manager.add_task("return_controller", {"pour_position": lambda obs: o
 
 ```python
 {
-    "picking_position": lambda obs: obs["object"]["position"],
-    "target_position": lambda obs: obs["object"]["Pour_Position"],
-    "current_joint_positions": lambda obs: Franka.get_joint_positions()
+    "picking_position": np.array([...]),  # Replace with actual numerical values
+    "target_position": np.array([...]),
+    "current_joint_positions": Franka.get_joint_positions()
 }
 ```
 
@@ -73,9 +80,9 @@ controller_manager.add_task("return_controller", {"pour_position": lambda obs: o
 
 ```python
 {
-    "franka_art_controller": lambda obs: Franka.get_articulation_controller(),
-    "current_joint_positions": lambda obs: Franka.get_joint_positions(),
-    "current_joint_velocities": lambda obs: Franka.get_joint_velocities(),
+    "franka_art_controller": Franka.get_articulation_controller(),
+    "current_joint_positions": Franka.get_joint_positions(),
+    "current_joint_velocities": Franka.get_joint_velocities(),
     "pour_speed": 55 / 180.0 * np.pi
 }
 ```
@@ -84,15 +91,38 @@ controller_manager.add_task("return_controller", {"pour_position": lambda obs: o
 
 ```python
 {
-    "pour_position": lambda obs: obs["object"]["Pour_Position"],
-    "return_position": lambda obs: np.array(obs["object"]["Return_Position"]),
-    "current_joint_positions": lambda obs: Franka.get_joint_positions()
+    "pour_position": np.array([...]),
+    "return_position": np.array([...]),
+    "current_joint_positions": Franka.get_joint_positions()
 }
 ```
 
 ---
 
-**Note:** Ensure that each step in the `"Step"` list provides a clear `"Step Description"` and the corresponding `"Code"` as a **single-line string without line breaks or `\\n`**.
+**Sample Observations:**
+
+```plaintext
+Current Observations: {
+    'Franka': {
+        'joint_positions': array([ 1.1999934e-02, -5.6984431e-01,  1.0276589e-08, -2.8100469e+00,
+                                   -1.1012928e-06,  3.0317378e+00,  7.4098599e-01,  4.6370379e-03,
+                                    6.1939685e-03], dtype=float32)
+    },
+    'beaker_Kmno4': {
+        'Default_Position': array([-2.757, -1.34 ,  0.1  ]),
+        'position': array([-2.757     , -1.34      ,  0.09999999], dtype=float32),
+        'Pour_Position': array([-2.71199995, -1.33899979,  0.19099999]),
+        'Return_Position': array([-2.757, -1.32 ,  0.1  ]),
+        'Pour_Direction': -1
+    },
+    // ... other observations
+}
+```
+
+**Note:**
+
+- Use the actual numerical values from the observations in your code.
+- For example, if you need the `'position'` of `'beaker_Kmno4'`, use `np.array([-2.757, -1.34, 0.1])`.
 
 ---
 
@@ -103,16 +133,16 @@ controller_manager.add_task("return_controller", {"pour_position": lambda obs: o
     "Task Description": "Pick up beaker_Kmno4, pour its contents, and return it to its original position.",
     "Step": [
         {
-            "Step Description": "Use the pickmove_controller to pick up beaker_Kmno4 and move it to the pouring position.",
-            "Code": "controller_manager.add_task('pickmove_controller', {'picking_position': lambda obs: obs['beaker_Kmno4']['position'], 'target_position': lambda obs: obs['beaker_Kmno4']['Pour_Position'], 'current_joint_positions': lambda obs: Franka.get_joint_positions()})"
+            "Step Description": "Use the pickmove_controller to pick up beaker_Kmno4 from its current position and move it to the pouring position.",
+            "Code": "controller_manager.add_task('pickmove_controller', {'picking_position': np.array([-2.757, -1.34, 0.1]), 'target_position': np.array([-2.71199995, -1.33899979, 0.19099999]), 'current_joint_positions': Franka.get_joint_positions(), 'end_effector_offset': np.array([0.0, 0.0, 0.06]), 'end_effector_orientation': euler_angles_to_quat(np.array([np.pi / 2, np.pi / 2, 0]))})"
         },
         {
             "Step Description": "Use the pour_controller to pour the contents of beaker_Kmno4.",
-            "Code": "controller_manager.add_task('pour_controller', {'franka_art_controller': lambda obs: Franka.get_articulation_controller(), 'current_joint_positions': lambda obs: Franka.get_joint_positions(), 'current_joint_velocities': lambda obs: Franka.get_joint_velocities(), 'pour_speed': 55 / 180.0 * np.pi})"
+            "Code": "controller_manager.add_task('pour_controller', {'franka_art_controller': Franka.get_articulation_controller(), 'current_joint_positions': Franka.get_joint_positions(), 'current_joint_velocities': Franka.get_joint_velocities(), 'pour_speed': 55 / 180.0 * np.pi})"
         },
         {
             "Step Description": "Use the return_controller to return beaker_Kmno4 to its original position.",
-            "Code": "controller_manager.add_task('return_controller', {'pour_position': lambda obs: obs['beaker_Kmno4']['Pour_Position'], 'return_position': lambda obs: np.array(obs['beaker_Kmno4']['Return_Position']), 'current_joint_positions': lambda obs: Franka.get_joint_positions()})"
+            "Code": "controller_manager.add_task('return_controller', {'pour_position': np.array([-2.71199995, -1.33899979, 0.19099999]), 'return_position': np.array([-2.757, -1.32, 0.1]), 'current_joint_positions': Franka.get_joint_positions(), 'end_effector_offset': np.array([0.0, 0.0, 0.055]), 'end_effector_orientation': euler_angles_to_quat(np.array([np.pi / 2, np.pi / 2, 0]))})"
         }
     ]
 }

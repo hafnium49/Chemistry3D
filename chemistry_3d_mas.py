@@ -225,7 +225,7 @@ class Chemistry3DMAS(BaseSample):
 
                 add_tasks_dic = self.mas._add_tasks(str(add_controllers_dic))
                 with open(f'{proposed_str_path}/add_tasks_dic.txt', 'a') as file:
-                    file.write(str(add_tasks_dic))
+                    file.write("\n\n"+str(add_tasks_dic))
                 # self.mas._generate_code_str(add_tasks_str)
                 self.mas._execute_code_str(code=add_tasks_dic)
 
