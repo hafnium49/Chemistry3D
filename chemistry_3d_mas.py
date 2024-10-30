@@ -102,10 +102,10 @@ class Chemistry3DMAS(BaseSample):
         # Initialize the MAS system
         self.mas = MAS(world, self.controller_manager)
 
-        # Perform simulation updates
-        self.Sim_Beaker_Kmno4.sim_update(self.Sim_Bottle_Kmno4, self.Franka, self.controller_manager)
-        self.Sim_Beaker_Fecl2.sim_update(self.Sim_Bottle_Fecl2, self.Franka, self.controller_manager)
-        self.Sim_Beaker_Fecl2.sim_update(self.Sim_Beaker_Kmno4, self.Franka, self.controller_manager)
+        # # Perform simulation updates
+        # self.Sim_Beaker_Kmno4.sim_update(self.Sim_Bottle_Kmno4, self.Franka, self.controller_manager)
+        # self.Sim_Beaker_Fecl2.sim_update(self.Sim_Bottle_Fecl2, self.Franka, self.controller_manager)
+        # self.Sim_Beaker_Fecl2.sim_update(self.Sim_Beaker_Kmno4, self.Franka, self.controller_manager)
 
         # Start user input thread
         self.user_prompt = None
