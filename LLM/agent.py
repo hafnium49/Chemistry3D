@@ -5,11 +5,13 @@ import os
 from datetime import datetime
 from omni.isaac.examples.user_examples.Chemistry3D_utils import *
 # from omni.isaac.examples.user_examples.LLM.mas import GenerateControllers, AddControllers, AddTasks
+from omni.isaac.examples.user_examples.tools import get_function_schemas
 import traceback
 from dotenv import load_dotenv
 import json
 import ast
 from pydantic import BaseModel  # Import BaseModel for type checking
+from typing import List, Dict, Any
 
 # Get the current directory
 current_directory = os.path.dirname(os.path.abspath(__file__))
@@ -93,6 +95,69 @@ class AgentLLM:
 
         print(f"All {retry_limit} retries failed.")
         return None
+
+    def generate_response_function_calling(self, prompt, input_messages=None, retry_limit=3, max_tokens=10000, temperature=0.7):
+        attempts = 0
+        while attempts < retry_limit:
+            try:
+                if input_messages is None:
+                    input_messages = [
+                        {"role": "system", "content": self.system_prompt},
+                        {"role": "user", "content": prompt}
+                    ]
+                    prompt = input_messages[-1]["content"]
+                
+                function_schemas = get_function_schemas()
+
+                response = self.client.chat.completions.create(
+                    model=self._model_engine,
+                    messages=input_messages,
+                    functions=function_schemas,
+                    function_call="auto",
+                    max_tokens=max_tokens,
+                    temperature=temperature
+                )
+
+                message = response.choices[0].message
+
+                # Check if the assistant wants to call a function
+                if message.get("function_call"):
+                    self._append_to_log(prompt, str(message))
+                    self._save_conversation()
+                    print(f'{self._name}: Function call received.')
+                    return message  # Return the message containing the function call
+                else:
+                    # Regular response
+                    self._append_to_log(prompt, message.get("content", ""))
+                    self._save_conversation()
+                    print(f'{self._name}: Response has been generated successfully.')
+                    return message.get("content", "").strip()
+            except OpenAIError as e:
+                attempts += 1
+                print(f"Attempt {attempts}: An error occurred - {e}")
+
+        print(f"All {retry_limit} retries failed.")
+        return None
+
+    def handle_function_call(self, message, global_dict):
+        function_call = message.get("function_call", {})
+        function_name = function_call.get("name")
+        arguments = json.loads(function_call.get("arguments", "{}"))
+
+        # Map function names to actual functions
+        function_mapping = {
+            "add_pickmove_task": add_pickmove_task,
+            "add_pour_task": add_pour_task,
+            "add_return_task": add_return_task
+        }
+
+        if function_name in function_mapping:
+            function_to_call = function_mapping[function_name]
+            result = function_to_call(**arguments)
+            return result
+        else:
+            print(f"Function {function_name} not found.")
+            return None
 
     def _append_to_log(self, prompt, response):
         self.conversation_log.append({'prompt': prompt, 'response': response})
