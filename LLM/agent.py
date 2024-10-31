@@ -150,8 +150,8 @@ class AgentLLM:
             "add_return_task": add_return_task
         }
 
-        function_name = tool_call['function']['name']
-        arguments = json.loads(tool_call['function']['arguments'])
+        function_name = tool_call.function.name
+        arguments = json.loads(tool_call.function.arguments)
         print(f"Function name: {function_name}")
         print(f"Arguments: {arguments}")
 

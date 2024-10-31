@@ -274,8 +274,7 @@ class Chemistry3DMAS(BaseSample):
                     if assistant_response:
                         # Handle regular assistant response
                         print(f"Assistant: {assistant_response}")
-                    else:
-                        print(f"Error: {e}")
+                    print(f"Error: {e}")
             if self.controllers_ready:
                 # Execute the controller manager
                 self.controller_manager.execute(current_observations=current_observations)
