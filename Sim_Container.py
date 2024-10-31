@@ -6,7 +6,6 @@ from pxr import Gf,Sdf
 from omni.isaac.examples.user_examples.Controllers.Controller_Manager import ControllerManager
 from omni.isaac.examples.user_examples.Controllers.pick_move_controller import PickMoveController
 from omni.isaac.examples.user_examples.Controllers.return_controller import PlaceController
-from omni.isaac.examples.user_examples.Controllers.pour_controller import PourController
 from omni.isaac.examples.user_examples.Chemistry3D_utils import Utils
 # from utils import Utils
 from omni.isaac.examples.user_examples.Chemistry3D_utils import *
@@ -85,7 +84,8 @@ class Sim_Container(Container):
             gripper=robot.gripper,
             speed=1.5
         )
-
+        
+        from omni.isaac.examples.user_examples.Controllers.pour_controller import PourController
         pour_controller = PourController(
             name="pour_controller",
             cspace_controller=RMPFlowController(name="pour_cspace_controller", robot_articulation=robot),
@@ -106,30 +106,30 @@ class Sim_Container(Container):
         controller_manager.add_controller('pour_controller', pour_controller)
         controller_manager.add_controller('return_controller', return_controller)
 
-        controller_manager.add_task('pickmove_controller', {
-            "picking_position": lambda obs: obs[Sim_Container1.get_sim_container().name]["position"],
-            "target_position": lambda obs: obs[Sim_Container1.get_sim_container().name]["Pour_Position"],
-            "current_joint_positions": lambda obs: robot.get_joint_positions(),
-            "end_effector_offset": np.array([0.0, 0.0, 0.06]),
-            "end_effector_orientation": euler_angles_to_quat(np.array([np.pi / 2, np.pi / 2, 0]))
-        })
+        # controller_manager.add_task('pickmove_controller', {
+        #     "picking_position": lambda obs: obs[Sim_Container1.get_sim_container().name]["position"],
+        #     "target_position": lambda obs: obs[Sim_Container1.get_sim_container().name]["Pour_Position"],
+        #     "current_joint_positions": lambda obs: robot.get_joint_positions(),
+        #     "end_effector_offset": np.array([0.0, 0.0, 0.06]),
+        #     "end_effector_orientation": euler_angles_to_quat(np.array([np.pi / 2, np.pi / 2, 0]))
+        # })
         
-        controller_manager.add_task('pour_controller', {
-            'franka_art_controller': robot.get_articulation_controller(),
-            "current_joint_positions": robot.get_joint_positions(),
-            'current_joint_velocities': robot.get_joint_velocities(),
-            # 'pour_speed': lambda obs: obs[Sim_Container1.get_sim_container().name]["Pour_Derecition"] * 55 / 180.0 * np.pi
-            'pour_speed': lambda obs: obs[Sim_Container1.get_sim_container().name]["Pour_Direction"] * 55 / 180.0 * np.pi
-            # 'pour_speed': lambda obs: obs[Sim_Container1.get_sim_container().name].get("Pour_Direction", 0) * 55 / 180.0 * np.pi
-        })
+        # controller_manager.add_task('pour_controller', {
+        #     'franka_art_controller': robot.get_articulation_controller(),
+        #     "current_joint_positions": robot.get_joint_positions(),
+        #     'current_joint_velocities': robot.get_joint_velocities(),
+        #     # 'pour_speed': lambda obs: obs[Sim_Container1.get_sim_container().name]["Pour_Derecition"] * 55 / 180.0 * np.pi
+        #     'pour_speed': lambda obs: obs[Sim_Container1.get_sim_container().name]["Pour_Direction"] * 55 / 180.0 * np.pi
+        #     # 'pour_speed': lambda obs: obs[Sim_Container1.get_sim_container().name].get("Pour_Direction", 0) * 55 / 180.0 * np.pi
+        # })
         
-        controller_manager.add_task('return_controller', {
-            "pour_position": lambda obs: obs[Sim_Container1.get_sim_container().name]["Pour_Position"],
-            "return_position": lambda obs: obs[Sim_Container1.get_sim_container().name]["Return_Position"],
-            "current_joint_positions": lambda obs: robot.get_joint_positions(),
-            "end_effector_offset": np.array([0.0, 0.00, 0.055]),
-            "end_effector_orientation": euler_angles_to_quat(np.array([np.pi / 2, np.pi / 2, 0]))
-        })
+        # controller_manager.add_task('return_controller', {
+        #     "pour_position": lambda obs: obs[Sim_Container1.get_sim_container().name]["Pour_Position"],
+        #     "return_position": lambda obs: obs[Sim_Container1.get_sim_container().name]["Return_Position"],
+        #     "current_joint_positions": lambda obs: robot.get_joint_positions(),
+        #     "end_effector_offset": np.array([0.0, 0.00, 0.055]),
+        #     "end_effector_orientation": euler_angles_to_quat(np.array([np.pi / 2, np.pi / 2, 0]))
+        # })
 
     def set_sim_container(self, new_sim_container):
         """Set the simulation container."""

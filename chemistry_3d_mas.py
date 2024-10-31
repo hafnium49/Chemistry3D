@@ -103,7 +103,7 @@ class Chemistry3DMAS(BaseSample):
         self.mas = MAS(world, self.controller_manager)
 
         # # Perform simulation updates
-        # self.Sim_Beaker_Kmno4.sim_update(self.Sim_Bottle_Kmno4, self.Franka, self.controller_manager)
+        self.Sim_Beaker_Kmno4.sim_update(self.Sim_Bottle_Kmno4, self.Franka, self.controller_manager)
         # self.Sim_Beaker_Fecl2.sim_update(self.Sim_Bottle_Fecl2, self.Franka, self.controller_manager)
         # self.Sim_Beaker_Fecl2.sim_update(self.Sim_Beaker_Kmno4, self.Franka, self.controller_manager)
 
@@ -164,7 +164,7 @@ class Chemistry3DMAS(BaseSample):
         self.mas = MAS(world, self.controller_manager)
 
         # Perform simulation updates
-        # self.Sim_Beaker_Kmno4.sim_update(self.Sim_Bottle_Kmno4, self.Franka, self.controller_manager)
+        self.Sim_Beaker_Kmno4.sim_update(self.Sim_Bottle_Kmno4, self.Franka, self.controller_manager)
         # self.Sim_Beaker_Fecl2.sim_update(self.Sim_Bottle_Fecl2, self.Franka, self.controller_manager)
         # self.Sim_Beaker_Fecl2.sim_update(self.Sim_Beaker_Kmno4, self.Franka, self.controller_manager)
 
@@ -199,6 +199,46 @@ class Chemistry3DMAS(BaseSample):
         while True:
             self.user_prompt = input("Enter your task: ")
 
+    # def sim_step(self, step_size):
+    #     world = self.get_world()
+    #     if world.is_playing():
+    #         if world.current_time_step_index == 0:
+    #             world.reset()
+    #             self.controller_manager.reset()
+    #         current_observations = world.get_observations()
+    #         if self.user_prompt and not self.controllers_ready:
+    #             print(f"Current Observations: {current_observations}")
+    #             print('Code generating...')
+    #             # Generate controllers based on the user prompt
+    #             controllers_dic = self.mas._generate_controllers(self.user_prompt, current_observations)
+    #             # controllers_str = self.mas._generate_controllers(self.user_prompt, current_observations)
+    #             with open(f'{proposed_str_path}/controllers_dic.txt', 'a') as file:
+    #                 file.write(str(controllers_dic))
+    #             # self.mas._generate_code_str(controllers_str)
+    #             self.mas._execute_code_str(code=controllers_dic)
+
+    #             add_controllers_dic = self.mas._add_controllers(str(controllers_dic))
+    #             with open(f'{proposed_str_path}/add_controllers_dic.txt', 'a') as file:
+    #                 file.write(str(add_controllers_dic))
+    #             # self.mas._generate_code_str(add_controllers_str)
+    #             self.mas._execute_code_str(code=add_controllers_dic)
+
+    #             add_tasks_dic = self.mas._add_tasks(str(add_controllers_dic))
+    #             with open(f'{proposed_str_path}/add_tasks_dic.txt', 'a') as file:
+    #                 file.write("\n\n"+str(add_tasks_dic))
+    #             # self.mas._generate_code_str(add_tasks_str)
+    #             self.mas._execute_code_str(code=add_tasks_dic)
+
+    #             self.controllers_ready = True
+    #             print('Controllers executing...')
+    #         if self.controllers_ready:
+    #             # Execute the controller manager
+    #             self.controller_manager.execute(current_observations=current_observations)
+    #             if self.controller_manager.is_done():
+    #                 world.pause()
+    #                 self.controllers_ready = False  # Reset for next user prompt
+    #                 self.user_prompt = None
+
     def sim_step(self, step_size):
         world = self.get_world()
         if world.is_playing():
@@ -208,29 +248,32 @@ class Chemistry3DMAS(BaseSample):
             current_observations = world.get_observations()
             if self.user_prompt and not self.controllers_ready:
                 print(f"Current Observations: {current_observations}")
-                print('Code generating...')
-                # Generate controllers based on the user prompt
-                controllers_dic = self.mas._generate_controllers(self.user_prompt, current_observations)
-                # controllers_str = self.mas._generate_controllers(self.user_prompt, current_observations)
-                with open(f'{proposed_str_path}/controllers_dic.txt', 'a') as file:
-                    file.write(str(controllers_dic))
-                # self.mas._generate_code_str(controllers_str)
-                self.mas._execute_code_str(code=controllers_dic)
+                print('Generating response...')
+                # Generate response using function calling
+                assistant_response = self.mas.agent.generate_response(f"Current observations:\n{current_observations}\n\nUser prompt: {self.user_prompt}")
 
-                add_controllers_dic = self.mas._add_controllers(str(controllers_dic))
-                with open(f'{proposed_str_path}/add_controllers_dic.txt', 'a') as file:
-                    file.write(str(add_controllers_dic))
-                # self.mas._generate_code_str(add_controllers_str)
-                self.mas._execute_code_str(code=add_controllers_dic)
-
-                add_tasks_dic = self.mas._add_tasks(str(add_controllers_dic))
-                with open(f'{proposed_str_path}/add_tasks_dic.txt', 'a') as file:
-                    file.write("\n\n"+str(add_tasks_dic))
-                # self.mas._generate_code_str(add_tasks_str)
-                self.mas._execute_code_str(code=add_tasks_dic)
-
-                self.controllers_ready = True
-                print('Controllers executing...')
+                # Check if assistant_response is a function call
+                # if assistant_response and assistant_response.tool_calls:
+                try:
+                    # Iterate through tool calls to handle each weather check
+                    for tool_call in assistant_response.tool_calls:
+                        # Handle the function call
+                        result = self.mas.agent.handle_function_call(
+                            tool_call=tool_call,
+                            global_dict=globals(),
+                            controller_manager=self.controller_manager,
+                            current_observations=current_observations,
+                            robot=self.Franka
+                        )
+                        print(f"Function call result: {result}")
+                        self.controllers_ready = True
+                        print('Controllers executing...')
+                except Exception as e:
+                    if assistant_response:
+                        # Handle regular assistant response
+                        print(f"Assistant: {assistant_response}")
+                    else:
+                        print(f"Error: {e}")
             if self.controllers_ready:
                 # Execute the controller manager
                 self.controller_manager.execute(current_observations=current_observations)

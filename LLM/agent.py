@@ -5,7 +5,7 @@ import os
 from datetime import datetime
 from omni.isaac.examples.user_examples.Chemistry3D_utils import *
 # from omni.isaac.examples.user_examples.LLM.mas import GenerateControllers, AddControllers, AddTasks
-from omni.isaac.examples.user_examples.tools import get_function_schemas
+from omni.isaac.examples.user_examples.tools import get_function_schemas, add_pickmove_task, add_pour_task, add_return_task
 import traceback
 from dotenv import load_dotenv
 import json
@@ -52,51 +52,51 @@ class AgentLLM:
     def get_name(self):
         return self._name
 
-    def generate_response(self, prompt, input_messages=None, retry_limit=3, max_tokens=10000, temperature=0.7, response_format=None):
-        attempts = 0
-        while attempts < retry_limit:
-            try:
-                if input_messages is None:
-                    input_messages = [
-                        {"role": "system", "content": self.system_prompt},
-                        {"role": "user", "content": prompt}
-                    ]
-                    prompt = input_messages[-1]["content"]
+    # def generate_response(self, prompt, input_messages=None, retry_limit=3, max_tokens=10000, temperature=0.7, response_format=None):
+    #     attempts = 0
+    #     while attempts < retry_limit:
+    #         try:
+    #             if input_messages is None:
+    #                 input_messages = [
+    #                     {"role": "system", "content": self.system_prompt},
+    #                     {"role": "user", "content": prompt}
+    #                 ]
+    #                 prompt = input_messages[-1]["content"]
                 
-                if response_format:
-                    response = self.client.beta.chat.completions.parse(
-                        model=self._model_engine,
-                        messages=input_messages,
-                        max_tokens=max_tokens,
-                        temperature=temperature,
-                        response_format=response_format
-                    )
-                    message = response.choices[0].message.parsed
-                    self._append_to_log(prompt, str(message))
-                    self._save_conversation()
-                    print(f'{self._name}: Response has been generated successfully.')
-                    print(f"type: {type(message)}")
-                    return message
-                else:
-                    response = self.client.chat.completions.create(
-                        model=self._model_engine,
-                        messages=input_messages,
-                        max_tokens=max_tokens,
-                        temperature=temperature
-                    )
-                    message = response.choices[0].message.content
-                    self._append_to_log(prompt, message)
-                    self._save_conversation()
-                    print(f'{self._name}: Response has been generated successfully.')
-                    return message.strip()
-            except OpenAIError as e:
-                attempts += 1
-                print(f"Attempt {attempts}: An error occurred - {e}")
+    #             if response_format:
+    #                 response = self.client.beta.chat.completions.parse(
+    #                     model=self._model_engine,
+    #                     messages=input_messages,
+    #                     max_tokens=max_tokens,
+    #                     temperature=temperature,
+    #                     response_format=response_format
+    #                 )
+    #                 message = response.choices[0].message.parsed
+    #                 self._append_to_log(prompt, str(message))
+    #                 self._save_conversation()
+    #                 print(f'{self._name}: Response has been generated successfully.')
+    #                 print(f"type: {type(message)}")
+    #                 return message
+    #             else:
+    #                 response = self.client.chat.completions.create(
+    #                     model=self._model_engine,
+    #                     messages=input_messages,
+    #                     max_tokens=max_tokens,
+    #                     temperature=temperature
+    #                 )
+    #                 message = response.choices[0].message.content
+    #                 self._append_to_log(prompt, message)
+    #                 self._save_conversation()
+    #                 print(f'{self._name}: Response has been generated successfully.')
+    #                 return message.strip()
+    #         except OpenAIError as e:
+    #             attempts += 1
+    #             print(f"Attempt {attempts}: An error occurred - {e}")
 
-        print(f"All {retry_limit} retries failed.")
-        return None
+    #     print(f"All {retry_limit} retries failed.")
+    #     return None
 
-    def generate_response_function_calling(self, prompt, input_messages=None, retry_limit=3, max_tokens=10000, temperature=0.7):
+    def generate_response(self, prompt, input_messages=None, retry_limit=3, max_tokens=10000, temperature=0.7):
         attempts = 0
         while attempts < retry_limit:
             try:
@@ -121,17 +121,17 @@ class AgentLLM:
                 message = response.choices[0].message
 
                 # Check if the assistant wants to call a function
-                if message.get("function_call"):
+                if message.tool_calls:
                     self._append_to_log(prompt, str(message))
                     self._save_conversation()
                     print(f'{self._name}: Function call received.')
                     return message  # Return the message containing the function call
                 else:
                     # Regular response
-                    self._append_to_log(prompt, message.get("content", ""))
+                    self._append_to_log(prompt, message.content)
                     self._save_conversation()
                     print(f'{self._name}: Response has been generated successfully.')
-                    return message.get("content", "").strip()
+                    return message.content #message.get("content", "").strip()
             except OpenAIError as e:
                 attempts += 1
                 print(f"Attempt {attempts}: An error occurred - {e}")
@@ -139,10 +139,8 @@ class AgentLLM:
         print(f"All {retry_limit} retries failed.")
         return None
 
-    def handle_function_call(self, message, global_dict):
-        function_call = message.get("function_call", {})
-        function_name = function_call.get("name")
-        arguments = json.loads(function_call.get("arguments", "{}"))
+    def handle_function_call(self, tool_call, global_dict, controller_manager, current_observations, robot):
+        # function_call = message.get("function_call", {})
 
         # Map function names to actual functions
         function_mapping = {
@@ -151,10 +149,72 @@ class AgentLLM:
             "add_return_task": add_return_task
         }
 
+        function_name = tool_call.name
+        arguments = json.loads(tool_call.function.arguments)
+        # city = arguments['city']
+        # weather_info = check_weather(city)
+        # print(f"Weather in {city}: {weather_info}")
+
         if function_name in function_mapping:
             function_to_call = function_mapping[function_name]
-            result = function_to_call(**arguments)
-            return result
+
+            # Prepare arguments for the function call
+            if function_name == "add_pickmove_task":
+                # Extract arguments
+                picking_position = arguments.get("picking_position")
+                target_position = arguments.get("target_position")
+                end_effector_offset = arguments.get("end_effector_offset")
+                end_effector_orientation = arguments.get("end_effector_orientation")
+                # Get current joint positions from the robot
+                current_joint_positions = robot.get_joint_positions().tolist()
+
+                # Call the function with all arguments
+                result = function_to_call(
+                    controller_manager,
+                    picking_position,
+                    target_position,
+                    current_joint_positions,
+                    end_effector_offset,
+                    end_effector_orientation
+                )
+                return result
+
+            elif function_name == "add_pour_task":
+                # Extract arguments
+                pour_speed = arguments.get("pour_speed")
+                # Get current joint positions and velocities from the robot
+                franka_art_controller = robot.get_articulation_controller()
+                current_joint_positions = robot.get_joint_positions().tolist()
+                current_joint_velocities = robot.get_joint_velocities().tolist()
+
+                result = function_to_call(
+                    controller_manager,
+                    franka_art_controller,
+                    current_joint_positions,
+                    current_joint_velocities,
+                    pour_speed
+                )
+                return result
+
+            elif function_name == "add_return_task":
+                # Extract arguments
+                pour_position = arguments.get("pour_position")
+                return_position = arguments.get("return_position")
+                end_effector_offset = arguments.get("end_effector_offset")
+                end_effector_orientation = arguments.get("end_effector_orientation")
+                # Get current joint positions from the robot
+                current_joint_positions = robot.get_joint_positions().tolist()
+
+                result = function_to_call(
+                    controller_manager,
+                    pour_position,
+                    return_position,
+                    current_joint_positions,
+                    end_effector_offset,
+                    end_effector_orientation
+                )
+                return result
+
         else:
             print(f"Function {function_name} not found.")
             return None

@@ -136,7 +136,7 @@ class MAS:
         """
         self.agent_controller_generator = Agent("controller_generator", save_path=LOG_PATH)
         self.agent_planner = Agent("planner", save_path=LOG_PATH)
-        self.agent_coder = Agent("coder", save_path=LOG_PATH)  # Initialize agent_coder here
+        self.agent_coder = Agent("coder", save_path=LOG_PATH)
         self.agent_debugger = Agent("debugger", save_path=LOG_PATH)
         self.agent_reaction_responser = Agent("reaction_responser", save_path=LOG_PATH)
         self.agent_add_controllers = Agent("add_controllers", save_path=LOG_PATH)
@@ -145,7 +145,12 @@ class MAS:
         self.agent_add_particles = Agent("add_particles", save_path=LOG_PATH)
         self.agent_add_tasks = Agent("add_tasks", save_path=LOG_PATH)
 
-        # Load system prompts
+        # Initialize the assistant agent
+        self.agent = Agent("assistant", save_path=LOG_PATH)
+        # Load the assistant_prompt.txt
+        self.agent.load_system_prompt_from_file(PROMPTS_PATH + '/assistant_prompt.txt')
+
+        # Load system prompts for other agents
         self.agent_controller_generator.load_system_prompt_from_file(PROMPTS_PATH + '/controller_generator_prompt.txt')
         self.agent_reaction_responser.load_system_prompt_from_file(PROMPTS_PATH + '/reaction_responser_prompt.txt')
         self.agent_add_controllers.load_system_prompt_from_file(PROMPTS_PATH + '/add_controller_prompt.txt')

@@ -1,6 +1,8 @@
 # tools.py
 
-def add_pickmove_task(picking_position, target_position, current_joint_positions, end_effector_offset, end_effector_orientation):
+import numpy as np
+
+def add_pickmove_task(controller_manager, picking_position, target_position, current_joint_positions, end_effector_offset, end_effector_orientation):
     param_template = {
         "picking_position": np.array(picking_position),
         "target_position": np.array(target_position),
@@ -11,7 +13,7 @@ def add_pickmove_task(picking_position, target_position, current_joint_positions
     controller_manager.add_task('pickmove_controller', param_template)
     return "PickMove task added successfully."
 
-def add_pour_task(franka_art_controller, current_joint_positions, current_joint_velocities, pour_speed):
+def add_pour_task(controller_manager, franka_art_controller, current_joint_positions, current_joint_velocities, pour_speed):
     param_template = {
         "franka_art_controller": franka_art_controller,
         "current_joint_positions": np.array(current_joint_positions),
@@ -21,7 +23,7 @@ def add_pour_task(franka_art_controller, current_joint_positions, current_joint_
     controller_manager.add_task('pour_controller', param_template)
     return "Pour task added successfully."
 
-def add_return_task(pour_position, return_position, current_joint_positions, end_effector_offset, end_effector_orientation):
+def add_return_task(controller_manager, pour_position, return_position, current_joint_positions, end_effector_offset, end_effector_orientation):
     param_template = {
         "pour_position": np.array(pour_position),
         "return_position": np.array(return_position),
