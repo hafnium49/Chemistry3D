@@ -112,10 +112,10 @@ class AgentLLM:
                 response = self.client.chat.completions.create(
                     model=self._model_engine,
                     messages=input_messages,
-                    functions=function_schemas,
-                    function_call="auto",
-                    max_tokens=max_tokens,
-                    temperature=temperature
+                    tools=function_schemas,
+                    # function_call="auto",
+                    # max_tokens=max_tokens,
+                    # temperature=temperature
                 )
 
                 message = response.choices[0].message

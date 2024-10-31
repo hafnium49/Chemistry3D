@@ -35,50 +35,116 @@ def add_return_task(controller_manager, pour_position, return_position, current_
     return "Return task added successfully."
 
 def get_function_schemas():
-    function_schemas = [
+    tools = [
         {
-            "name": "add_pickmove_task",
-            "description": "Adds a pick-and-move task to the controller manager.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "picking_position": {"type": "array", "items": {"type": "number"}, "description": "The position to pick the object from."},
-                    "target_position": {"type": "array", "items": {"type": "number"}, "description": "The target position to move the object to."},
-                    "current_joint_positions": {"type": "array", "items": {"type": "number"}, "description": "Current joint positions of the robot."},
-                    "end_effector_offset": {"type": "array", "items": {"type": "number"}, "description": "Offset for the end effector."},
-                    "end_effector_orientation": {"type": "array", "items": {"type": "number"}, "description": "Orientation of the end effector in quaternion."}
+            "type": "function",
+            "function": {
+                "name": "add_pickmove_task",
+                "description": "Adds a pick-and-move task to the controller manager.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "picking_position": {
+                            "type": "array",
+                            "items": {"type": "number"},
+                            "description": "The position to pick the object from."
+                        },
+                        "target_position": {
+                            "type": "array",
+                            "items": {"type": "number"},
+                            "description": "The target position to move the object to."
+                        },
+                        "current_joint_positions": {
+                            "type": "array",
+                            "items": {"type": "number"},
+                            "description": "Current joint positions of the robot."
+                        },
+                        "end_effector_offset": {
+                            "type": "array",
+                            "items": {"type": "number"},
+                            "description": "Offset for the end effector."
+                        },
+                        "end_effector_orientation": {
+                            "type": "array",
+                            "items": {"type": "number"},
+                            "description": "Orientation of the end effector in quaternion."
+                        }
+                    },
+                    "required": ["picking_position", "target_position", "current_joint_positions", "end_effector_offset", "end_effector_orientation"],
+                    "additionalProperties": False
                 },
-                "required": ["picking_position", "target_position", "current_joint_positions", "end_effector_offset", "end_effector_orientation"]
             }
         },
         {
-            "name": "add_pour_task",
-            "description": "Adds a pour task to the controller manager.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "franka_art_controller": {"type": "string", "description": "Franka articulation controller."},
-                    "current_joint_positions": {"type": "array", "items": {"type": "number"}, "description": "Current joint positions of the robot."},
-                    "current_joint_velocities": {"type": "array", "items": {"type": "number"}, "description": "Current joint velocities of the robot."},
-                    "pour_speed": {"type": "number", "description": "Speed at which to perform the pour action."}
+            "type": "function",
+            "function": {
+                "name": "add_pour_task",
+                "description": "Adds a pour task to the controller manager.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "franka_art_controller": {
+                            "type": "string",
+                            "description": "Franka articulation controller."
+                        },
+                        "current_joint_positions": {
+                            "type": "array",
+                            "items": {"type": "number"},
+                            "description": "Current joint positions of the robot."
+                        },
+                        "current_joint_velocities": {
+                            "type": "array",
+                            "items": {"type": "number"},
+                            "description": "Current joint velocities of the robot."
+                        },
+                        "pour_speed": {
+                            "type": "number",
+                            "description": "Speed at which to perform the pour action."
+                        }
+                    },
+                    "required": ["franka_art_controller", "current_joint_positions", "current_joint_velocities", "pour_speed"],
+                    "additionalProperties": False
                 },
-                "required": ["franka_art_controller", "current_joint_positions", "current_joint_velocities", "pour_speed"]
             }
         },
         {
-            "name": "add_return_task",
-            "description": "Adds a return task to the controller manager.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "pour_position": {"type": "array", "items": {"type": "number"}, "description": "Position where the pour was performed."},
-                    "return_position": {"type": "array", "items": {"type": "number"}, "description": "Position to return the object to."},
-                    "current_joint_positions": {"type": "array", "items": {"type": "number"}, "description": "Current joint positions of the robot."},
-                    "end_effector_offset": {"type": "array", "items": {"type": "number"}, "description": "Offset for the end effector."},
-                    "end_effector_orientation": {"type": "array", "items": {"type": "number"}, "description": "Orientation of the end effector in quaternion."}
+            "type": "function",
+            "function": {
+                "name": "add_return_task",
+                "description": "Adds a return task to the controller manager.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "pour_position": {
+                            "type": "array",
+                            "items": {"type": "number"},
+                            "description": "Position where the pour was performed."
+                        },
+                        "return_position": {
+                            "type": "array",
+                            "items": {"type": "number"},
+                            "description": "Position to return the object to."
+                        },
+                        "current_joint_positions": {
+                            "type": "array",
+                            "items": {"type": "number"},
+                            "description": "Current joint positions of the robot."
+                        },
+                        "end_effector_offset": {
+                            "type": "array",
+                            "items": {"type": "number"},
+                            "description": "Offset for the end effector."
+                        },
+                        "end_effector_orientation": {
+                            "type": "array",
+                            "items": {"type": "number"},
+                            "description": "Orientation of the end effector in quaternion."
+                        }
+                    },
+                    "required": ["pour_position", "return_position", "current_joint_positions", "end_effector_offset", "end_effector_orientation"],
+                    "additionalProperties": False
                 },
-                "required": ["pour_position", "return_position", "current_joint_positions", "end_effector_offset", "end_effector_orientation"]
             }
         }
     ]
-    return function_schemas
+    return tools
