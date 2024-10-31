@@ -125,6 +125,7 @@ class AgentLLM:
                     self._append_to_log(prompt, str(message))
                     self._save_conversation()
                     print(f'{self._name}: Function call received.')
+                    print(f'Content: {message.content}')
                     return message  # Return the message containing the function call
                 else:
                     # Regular response
@@ -149,17 +150,18 @@ class AgentLLM:
             "add_return_task": add_return_task
         }
 
-        function_name = tool_call.name
-        arguments = json.loads(tool_call.function.arguments)
-        # city = arguments['city']
-        # weather_info = check_weather(city)
-        # print(f"Weather in {city}: {weather_info}")
+        function_name = tool_call['function']['name']
+        arguments = json.loads(tool_call['function']['arguments'])
+        print(f"Function name: {function_name}")
+        print(f"Arguments: {arguments}")
+
 
         if function_name in function_mapping:
             function_to_call = function_mapping[function_name]
 
             # Prepare arguments for the function call
             if function_name == "add_pickmove_task":
+                print("Calling add_pickmove_task")
                 # Extract arguments
                 picking_position = arguments.get("picking_position")
                 target_position = arguments.get("target_position")
@@ -180,6 +182,7 @@ class AgentLLM:
                 return result
 
             elif function_name == "add_pour_task":
+                print("Calling add_pour_task")
                 # Extract arguments
                 pour_speed = arguments.get("pour_speed")
                 # Get current joint positions and velocities from the robot
@@ -197,6 +200,7 @@ class AgentLLM:
                 return result
 
             elif function_name == "add_return_task":
+                print("Calling add_return_task")
                 # Extract arguments
                 pour_position = arguments.get("pour_position")
                 return_position = arguments.get("return_position")

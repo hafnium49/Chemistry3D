@@ -144,11 +144,7 @@ class MAS:
         self.agent_add_rigidbody = Agent("add_rigidbody", save_path=LOG_PATH)
         self.agent_add_particles = Agent("add_particles", save_path=LOG_PATH)
         self.agent_add_tasks = Agent("add_tasks", save_path=LOG_PATH)
-
-        # Initialize the assistant agent
-        self.agent = Agent("assistant", save_path=LOG_PATH)
-        # Load the assistant_prompt.txt
-        self.agent.load_system_prompt_from_file(PROMPTS_PATH + '/assistant_prompt.txt')
+        self.agent_assistant = Agent("assistant", save_path=LOG_PATH)
 
         # Load system prompts for other agents
         self.agent_controller_generator.load_system_prompt_from_file(PROMPTS_PATH + '/controller_generator_prompt.txt')
@@ -160,6 +156,8 @@ class MAS:
         self.agent_add_tasks.load_system_prompt_from_file(PROMPTS_PATH + '/add_tasks_prompt.txt')
         self.agent_coder.load_system_prompt_from_file(PROMPTS_PATH + '/coder_prompt.txt')
         self.agent_debugger.load_system_prompt_from_file(PROMPTS_PATH + '/debugger_prompt.txt')
+        self.agent_assistant.load_system_prompt_from_file(PROMPTS_PATH + '/assistant_prompt.txt')
+        
 
     def _update_system_prompts(self):
         """

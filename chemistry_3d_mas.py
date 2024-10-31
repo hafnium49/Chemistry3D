@@ -250,24 +250,26 @@ class Chemistry3DMAS(BaseSample):
                 print(f"Current Observations: {current_observations}")
                 print('Generating response...')
                 # Generate response using function calling
-                assistant_response = self.mas.agent.generate_response(f"Current observations:\n{current_observations}\n\nUser prompt: {self.user_prompt}")
+                assistant_response = self.mas.agent_assistant.generate_response(f"Current observations:\n{current_observations}\n\nUser prompt: {self.user_prompt}")
 
                 # Check if assistant_response is a function call
                 # if assistant_response and assistant_response.tool_calls:
                 try:
                     # Iterate through tool calls to handle each weather check
-                    for tool_call in assistant_response.tool_calls:
+                    for k, tool_call in enumerate(assistant_response.tool_calls):
+                        print(f"Step {k+1}.")
                         # Handle the function call
-                        result = self.mas.agent.handle_function_call(
+                        result = self.mas.agent_assistant.handle_function_call(
                             tool_call=tool_call,
                             global_dict=globals(),
                             controller_manager=self.controller_manager,
                             current_observations=current_observations,
                             robot=self.Franka
                         )
+
                         print(f"Function call result: {result}")
-                        self.controllers_ready = True
-                        print('Controllers executing...')
+                    self.controllers_ready = True
+                    print('Controllers executing...')
                 except Exception as e:
                     if assistant_response:
                         # Handle regular assistant response
