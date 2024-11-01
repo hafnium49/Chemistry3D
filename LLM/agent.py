@@ -180,9 +180,9 @@ class AgentLLM:
                     picking_object=picking_object,
                     target_object=target_object,
                     target_position=target_position,
-                    current_joint_positions=current_joint_positions,
-                    end_effector_offset=end_effector_offset,
-                    end_effector_orientation=end_effector_orientation,
+                    # current_joint_positions=current_joint_positions,
+                    # end_effector_offset=end_effector_offset,
+                    # end_effector_orientation=end_effector_orientation,
                     current_observations=current_observations,
                     robot=robot
                 )
@@ -222,9 +222,9 @@ class AgentLLM:
                 result = function_to_call(
                     controller_manager=controller_manager,
                     picking_object=picking_object,
-                    current_joint_positions=current_joint_positions,
-                    end_effector_offset=end_effector_offset,
-                    end_effector_orientation=end_effector_orientation,
+                    # current_joint_positions=current_joint_positions,
+                    # end_effector_offset=end_effector_offset,
+                    # end_effector_orientation=end_effector_orientation,
                     current_observations=current_observations,
                     robot=robot
                 )
