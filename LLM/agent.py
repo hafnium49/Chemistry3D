@@ -172,8 +172,8 @@ class AgentLLM:
                 # end_effector_orientation = arguments.get("end_effector_orientation")
                 # current_joint_positions = arguments.get("current_joint_positions")
                 # If current_joint_positions is None, get from robot
-                if current_joint_positions is None:
-                    current_joint_positions = robot.get_joint_positions().tolist()
+                # if current_joint_positions is None:
+                #     current_joint_positions = robot.get_joint_positions().tolist()
                 # Call the function with all arguments
                 result = function_to_call(
                     controller_manager=controller_manager,
@@ -216,8 +216,8 @@ class AgentLLM:
                 # end_effector_offset = arguments.get("end_effector_offset")
                 # end_effector_orientation = arguments.get("end_effector_orientation")
                 # current_joint_positions = arguments.get("current_joint_positions")
-                if current_joint_positions is None:
-                    current_joint_positions = robot.get_joint_positions().tolist()
+                # if current_joint_positions is None:
+                #     current_joint_positions = robot.get_joint_positions().tolist()
                 # Call the function
                 result = function_to_call(
                     controller_manager=controller_manager,
