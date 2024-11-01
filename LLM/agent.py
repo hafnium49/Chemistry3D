@@ -168,9 +168,9 @@ class AgentLLM:
                 picking_object = arguments.get("picking_object")
                 target_object = arguments.get("target_object")
                 target_position = arguments.get("target_position")
-                end_effector_offset = arguments.get("end_effector_offset")
-                end_effector_orientation = arguments.get("end_effector_orientation")
-                current_joint_positions = arguments.get("current_joint_positions")
+                # end_effector_offset = arguments.get("end_effector_offset")
+                # end_effector_orientation = arguments.get("end_effector_orientation")
+                # current_joint_positions = arguments.get("current_joint_positions")
                 # If current_joint_positions is None, get from robot
                 if current_joint_positions is None:
                     current_joint_positions = robot.get_joint_positions().tolist()
@@ -213,9 +213,9 @@ class AgentLLM:
                 print("Calling add_return_task")
                 # Extract arguments
                 picking_object = arguments.get("picking_object")
-                end_effector_offset = arguments.get("end_effector_offset")
-                end_effector_orientation = arguments.get("end_effector_orientation")
-                current_joint_positions = arguments.get("current_joint_positions")
+                # end_effector_offset = arguments.get("end_effector_offset")
+                # end_effector_orientation = arguments.get("end_effector_orientation")
+                # current_joint_positions = arguments.get("current_joint_positions")
                 if current_joint_positions is None:
                     current_joint_positions = robot.get_joint_positions().tolist()
                 # Call the function
