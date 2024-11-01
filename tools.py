@@ -4,7 +4,7 @@ import numpy as np
 
 def add_pickmove_task(controller_manager, picking_object, target_object=None, target_position=None, current_joint_positions=None, end_effector_offset=None, end_effector_orientation=None, current_observations=None, robot=None):
     # Validate picking_object
-    valid_objects = ['Sim_Bottle_Kmno4', 'Sim_Bottle_Fecl2', 'Sim_Beaker_Fecl2', 'Sim_Beaker_Kmno4']
+    valid_objects = ['Bottle_Kmno4', 'Bottle_Fecl2', 'beaker_Fecl2', 'beaker_Kmno4']
     if picking_object not in valid_objects:
         return f"Invalid picking_object: {picking_object}. Must be one of {valid_objects}"
 
@@ -58,7 +58,7 @@ def add_pour_task(controller_manager, pour_speed, current_joint_positions=None, 
 
 def add_return_task(controller_manager, picking_object, current_joint_positions=None, end_effector_offset=None, end_effector_orientation=None, current_observations=None, robot=None):
     # Validate picking_object
-    valid_objects = ['Sim_Bottle_Kmno4', 'Sim_Bottle_Fecl2', 'Sim_Beaker_Fecl2', 'Sim_Beaker_Kmno4']
+    valid_objects = ['Bottle_Kmno4', 'Bottle_Fecl2', 'beaker_Fecl2', 'beaker_Kmno4']
     if picking_object not in valid_objects:
         return f"Invalid picking_object: {picking_object}. Must be one of {valid_objects}"
 
@@ -95,12 +95,12 @@ def get_function_schemas():
                     "properties": {
                         "picking_object": {
                             "type": "string",
-                            "enum": ['Sim_Bottle_Kmno4', 'Sim_Bottle_Fecl2', 'Sim_Beaker_Fecl2', 'Sim_Beaker_Kmno4'],
+                            "enum": ['Bottle_Kmno4', 'Bottle_Fecl2', 'beaker_Fecl2', 'beaker_Kmno4'],
                             "description": "The name of the object to pick."
                         },
                         "target_object": {
                             "type": "string",
-                            "enum": ['Sim_Bottle_Kmno4', 'Sim_Bottle_Fecl2', 'Sim_Beaker_Fecl2', 'Sim_Beaker_Kmno4'],
+                            "enum": ['Bottle_Kmno4', 'Bottle_Fecl2', 'beaker_Fecl2', 'beaker_Kmno4'],
                             "description": "The name of the target object to move to."
                         },
                         "target_position": {
@@ -167,7 +167,7 @@ def get_function_schemas():
                     "properties": {
                         "picking_object": {
                             "type": "string",
-                            "enum": ['Sim_Bottle_Kmno4', 'Sim_Bottle_Fecl2', 'Sim_Beaker_Fecl2', 'Sim_Beaker_Kmno4'],
+                            "enum": ['Bottle_Kmno4', 'Bottle_Fecl2', 'beaker_Fecl2', 'beaker_Kmno4'],
                             "description": "The name of the object to return."
                         },
                         "current_joint_positions": {
