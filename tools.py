@@ -92,18 +92,31 @@ def get_function_schemas():
                             "enum": ['Bottle_Kmno4', 'Bottle_Fecl2', 'beaker_Fecl2', 'beaker_Kmno4'],
                             "description": "The name of the object to pick."
                         },
-                        "target_object": {
-                            "type": "string",
-                            "enum": ['Bottle_Kmno4', 'Bottle_Fecl2', 'beaker_Fecl2', 'beaker_Kmno4'],
-                            "description": "The name of the target object to move to."
-                        },
-                        "target_position": {
-                            "type": "array",
-                            "items": {"type": "number"},
-                            "description": "The numeric target position to move the object to."
-                        }
+                        "target": {
+                            "oneOf": [
+                                {
+                                    "type": "string",
+                                    "enum": ['Bottle_Kmno4', 'Bottle_Fecl2', 'beaker_Fecl2', 'beaker_Kmno4'],
+                                    "description": "The name of the target object to move to."
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {"type": "number"},
+                                    "description": "The numeric target position to move the object to."
+                                }
+                            ]}
+                        # "target_object": {
+                        #     "type": "string",
+                        #     "enum": ['Bottle_Kmno4', 'Bottle_Fecl2', 'beaker_Fecl2', 'beaker_Kmno4'],
+                        #     "description": "The name of the target object to move to."
+                        # },
+                        # "target_position": {
+                        #     "type": "array",
+                        #     "items": {"type": "number"},
+                        #     "description": "The numeric target position to move the object to."
+                        # }
                     },
-                    "required": ["picking_object"],
+                    "required": ["picking_object", "target"],
                     "additionalProperties": False
                 }
             }
