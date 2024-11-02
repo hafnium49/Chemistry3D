@@ -37,6 +37,8 @@ def add_pickmove_task(controller_manager, picking_object, target, current_observ
         "end_effector_offset": end_effector_offset,
         "end_effector_orientation": end_effector_orientation
     }
+    # Store the target_position for use in add_return_task
+    controller_manager.last_pickmove_target_position = target_position
     controller_manager.add_task('pickmove_controller', param_template)
     return "PickMove task added successfully."
 
@@ -56,14 +58,27 @@ def add_pour_task(controller_manager, pour_speed, current_joint_velocities=None,
     controller_manager.add_task('pour_controller', param_template)
     return "Pour task added successfully."
 
-def add_return_task(controller_manager, picking_object, current_observations=None, robot=None):
-    # Validate picking_object
+def add_return_task(controller_manager, pour_position, return_position, current_observations=None, robot=None):
+    # Validate pour_position
     valid_objects = ['Bottle_Kmno4', 'Bottle_Fecl2', 'beaker_Fecl2', 'beaker_Kmno4']
-    if picking_object not in valid_objects:
-        return f"Invalid picking_object: {picking_object}. Must be one of {valid_objects}"
+    if isinstance(pour_position, str):
+        if pour_position not in valid_objects:
+            return f"Invalid pour_position: {pour_position}. Must be one of {valid_objects}"
+        pour_position_value = current_observations[pour_position]['Pour_Position']
+    elif isinstance(pour_position, list) or isinstance(pour_position, np.ndarray):
+        pour_position_value = np.array(pour_position)
+    else:
+        return "Error: 'pour_position' must be either a valid object name or a numeric position array."
 
-    pour_position = current_observations[picking_object]['Pour_Position']
-    return_position = current_observations[picking_object]['Return_Position']
+    # Validate return_position
+    if isinstance(return_position, str):
+        if return_position not in valid_objects:
+            return f"Invalid return_position: {return_position}. Must be one of {valid_objects}"
+        return_position_value = current_observations[return_position]['Return_Position']
+    elif isinstance(return_position, list) or isinstance(return_position, np.ndarray):
+        return_position_value = np.array(return_position)
+    else:
+        return "Error: 'return_position' must be either a valid object name or a numeric position array."
 
     # Set default values
     current_joint_positions = robot.get_joint_positions()
@@ -71,8 +86,8 @@ def add_return_task(controller_manager, picking_object, current_observations=Non
     end_effector_orientation = euler_angles_to_quat(np.array([np.pi / 2, np.pi / 2, 0]))
 
     param_template = {
-        "pour_position": np.array(pour_position),
-        "return_position": np.array(return_position),
+        "pour_position": pour_position_value,
+        "return_position": return_position_value,
         "current_joint_positions": np.array(current_joint_positions),
         "end_effector_offset": end_effector_offset,
         "end_effector_orientation": end_effector_orientation
@@ -107,7 +122,9 @@ def get_function_schemas():
                                     "items": {"type": "number"},
                                     "description": "The numeric target position to move the object to."
                                 }
-                            ]}
+                            ],
+                            "description": "The target object name or position."
+                        }
                     },
                     "required": ["picking_object", "target"],
                     "additionalProperties": False
@@ -145,13 +162,38 @@ def get_function_schemas():
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "picking_object": {
-                            "type": "string",
-                            "enum": ['Bottle_Kmno4', 'Bottle_Fecl2', 'beaker_Fecl2', 'beaker_Kmno4'],
-                            "description": "The name of the object to return."
+                        "pour_position": {
+                            "oneOf": [
+                                {
+                                    "type": "string",
+                                    "enum": ['Bottle_Kmno4', 'Bottle_Fecl2', 'beaker_Fecl2', 'beaker_Kmno4'],
+                                    "description": "The name of the pour position object."
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {"type": "number"},
+                                    "description": "The numeric pour position."
+                                }
+                            ],
+                            "description": "The pour position as object name or numeric position."
+                        },
+                        "return_position": {
+                            "oneOf": [
+                                {
+                                    "type": "string",
+                                    "enum": ['Bottle_Kmno4', 'Bottle_Fecl2', 'beaker_Fecl2', 'beaker_Kmno4'],
+                                    "description": "The name of the return position object."
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {"type": "number"},
+                                    "description": "The numeric return position."
+                                }
+                            ],
+                            "description": "The return position as object name or numeric position."
                         }
                     },
-                    "required": ["picking_object"],
+                    "required": ["pour_position", "return_position"],
                     "additionalProperties": False
                 }
             }
