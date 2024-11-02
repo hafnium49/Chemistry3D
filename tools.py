@@ -103,6 +103,8 @@ def get_function_schemas():
                 "name": "add_pickmove_task",
                 "description": (
                     "Adds a pick-and-move task to the controller manager. "
+                    "Picks up an object, moves it to a target position and hold."
+                    "To release the object, follow this task with an 'add_return_task'."
                     "The 'picking_object' and 'target' define the initial and final positions of the task, respectively."
                 ),
                 "parameters": {
@@ -176,6 +178,8 @@ def get_function_schemas():
                 "name": "add_return_task",
                 "description": (
                     "Adds a return task to the controller manager. "
+                    "Assumes the robot is currently holding an object and performs a return action to the specified position."
+                    "To pick up an object, call 'add_pickmove_task' before this task."
                     "The 'pour_position' and 'return_position' define the initial and final positions of the task, respectively. "
                     "Note: The 'pour_position' must be equivalent to the final position of the last step (e.g., the 'target' of the previous 'add_pickmove_task')."
                 ),
