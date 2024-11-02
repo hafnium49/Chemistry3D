@@ -101,26 +101,35 @@ def get_function_schemas():
             "type": "function",
             "function": {
                 "name": "add_pickmove_task",
-                "description": "Adds a pick-and-move task to the controller manager.",
+                "description": (
+                    "Adds a pick-and-move task to the controller manager. "
+                    "The 'picking_object' and 'target' define the initial and final positions of the task, respectively."
+                ),
                 "parameters": {
                     "type": "object",
                     "properties": {
                         "picking_object": {
                             "type": "string",
                             "enum": ['Bottle_Kmno4', 'Bottle_Fecl2', 'beaker_Fecl2', 'beaker_Kmno4'],
-                            "description": "The name of the object to pick."
+                            "description": (
+                                "The name of the object to pick. This defines the initial position of the task."
+                            )
                         },
                         "target": {
                             "oneOf": [
                                 {
                                     "type": "string",
                                     "enum": ['Bottle_Kmno4', 'Bottle_Fecl2', 'beaker_Fecl2', 'beaker_Kmno4'],
-                                    "description": "The name of the target object to move to."
+                                    "description": (
+                                        "The name of the target object to move to. This defines the final position of the task."
+                                    )
                                 },
                                 {
                                     "type": "array",
                                     "items": {"type": "number"},
-                                    "description": "The numeric target position to move the object to."
+                                    "description": (
+                                        "The numeric target position to move the object to. This defines the final position of the task."
+                                    )
                                 }
                             ],
                             "description": "The target object name or position."
@@ -135,18 +144,25 @@ def get_function_schemas():
             "type": "function",
             "function": {
                 "name": "add_pour_task",
-                "description": "Adds a pour task to the controller manager.",
+                "description": (
+                    "Adds a pour task to the controller manager. "
+                    "This task performs a pouring action at the robot's current position."
+                ),
                 "parameters": {
                     "type": "object",
                     "properties": {
                         "pour_speed": {
                             "type": "number",
-                            "description": "Speed at which to perform the pour action."
+                            "description": (
+                                "Speed at which to perform the pour action, in radians per second."
+                            )
                         },
                         "current_joint_velocities": {
                             "type": "array",
                             "items": {"type": "number"},
-                            "description": "Current joint velocities of the robot. Defaults to robot's current velocities."
+                            "description": (
+                                "Current joint velocities of the robot. Defaults to the robot's current velocities."
+                            )
                         }
                     },
                     "required": ["pour_speed"],
@@ -158,7 +174,11 @@ def get_function_schemas():
             "type": "function",
             "function": {
                 "name": "add_return_task",
-                "description": "Adds a return task to the controller manager.",
+                "description": (
+                    "Adds a return task to the controller manager. "
+                    "The 'pour_position' and 'return_position' define the initial and final positions of the task, respectively. "
+                    "Note: The 'pour_position' must be equivalent to the final position of the last step (e.g., the 'target' of the previous 'add_pickmove_task')."
+                ),
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -167,12 +187,18 @@ def get_function_schemas():
                                 {
                                     "type": "string",
                                     "enum": ['Bottle_Kmno4', 'Bottle_Fecl2', 'beaker_Fecl2', 'beaker_Kmno4'],
-                                    "description": "The name of the pour position object."
+                                    "description": (
+                                        "The name of the pour position object. "
+                                        "This should be equivalent to the final position of the last task."
+                                    )
                                 },
                                 {
                                     "type": "array",
                                     "items": {"type": "number"},
-                                    "description": "The numeric pour position."
+                                    "description": (
+                                        "The numeric pour position. "
+                                        "This should be equivalent to the final position of the last task."
+                                    )
                                 }
                             ],
                             "description": "The pour position as object name or numeric position."
@@ -182,12 +208,18 @@ def get_function_schemas():
                                 {
                                     "type": "string",
                                     "enum": ['Bottle_Kmno4', 'Bottle_Fecl2', 'beaker_Fecl2', 'beaker_Kmno4'],
-                                    "description": "The name of the return position object."
+                                    "description": (
+                                        "The name of the return position object. "
+                                        "This defines the final position of the return task."
+                                    )
                                 },
                                 {
                                     "type": "array",
                                     "items": {"type": "number"},
-                                    "description": "The numeric return position."
+                                    "description": (
+                                        "The numeric return position. "
+                                        "This defines the final position of the return task."
+                                    )
                                 }
                             ],
                             "description": "The return position as object name or numeric position."
@@ -200,3 +232,4 @@ def get_function_schemas():
         }
     ]
     return tools
+
