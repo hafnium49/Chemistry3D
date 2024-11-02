@@ -140,9 +140,10 @@ class AgentLLM:
         print(f"All {retry_limit} retries failed.")
         return None
 
-    def handle_function_call(self, tool_call, global_dict, controller_manager, current_observations, robot):
-        function_name = tool_call.function.name
-        arguments_str = tool_call.function.arguments
+    def handle_function_call(self, message, global_dict, controller_manager, current_observations, robot):
+        function_call = message.get("function_call", {})
+        function_name = function_call.get("name")
+        arguments_str = function_call.get("arguments", "{}")
         try:
             arguments = json.loads(arguments_str)
         except json.JSONDecodeError as e:
@@ -166,23 +167,12 @@ class AgentLLM:
                 print("Calling add_pickmove_task")
                 # Extract arguments
                 picking_object = arguments.get("picking_object")
-                target_object = arguments.get("target_object")
-                target_position = arguments.get("target_position")
-                # end_effector_offset = arguments.get("end_effector_offset")
-                # end_effector_orientation = arguments.get("end_effector_orientation")
-                # current_joint_positions = arguments.get("current_joint_positions")
-                # If current_joint_positions is None, get from robot
-                # if current_joint_positions is None:
-                #     current_joint_positions = robot.get_joint_positions().tolist()
+                target = arguments.get("target")
                 # Call the function with all arguments
                 result = function_to_call(
                     controller_manager=controller_manager,
                     picking_object=picking_object,
-                    target_object=target_object,
-                    target_position=target_position,
-                    # current_joint_positions=current_joint_positions,
-                    # end_effector_offset=end_effector_offset,
-                    # end_effector_orientation=end_effector_orientation,
+                    target=target,
                     current_observations=current_observations,
                     robot=robot
                 )
@@ -192,17 +182,11 @@ class AgentLLM:
                 print("Calling add_pour_task")
                 # Extract arguments
                 pour_speed = arguments.get("pour_speed")
-                current_joint_positions = arguments.get("current_joint_positions")
                 current_joint_velocities = arguments.get("current_joint_velocities")
-                if current_joint_positions is None:
-                    current_joint_positions = robot.get_joint_positions().tolist()
-                if current_joint_velocities is None:
-                    current_joint_velocities = robot.get_joint_velocities().tolist()
                 # Call the function
                 result = function_to_call(
                     controller_manager=controller_manager,
                     pour_speed=pour_speed,
-                    current_joint_positions=current_joint_positions,
                     current_joint_velocities=current_joint_velocities,
                     current_observations=current_observations,
                     robot=robot
@@ -213,18 +197,10 @@ class AgentLLM:
                 print("Calling add_return_task")
                 # Extract arguments
                 picking_object = arguments.get("picking_object")
-                # end_effector_offset = arguments.get("end_effector_offset")
-                # end_effector_orientation = arguments.get("end_effector_orientation")
-                # current_joint_positions = arguments.get("current_joint_positions")
-                # if current_joint_positions is None:
-                #     current_joint_positions = robot.get_joint_positions().tolist()
                 # Call the function
                 result = function_to_call(
                     controller_manager=controller_manager,
                     picking_object=picking_object,
-                    # current_joint_positions=current_joint_positions,
-                    # end_effector_offset=end_effector_offset,
-                    # end_effector_orientation=end_effector_orientation,
                     current_observations=current_observations,
                     robot=robot
                 )
