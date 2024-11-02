@@ -200,19 +200,12 @@ class AgentLLM:
             elif function_name == "add_return_task":
                 print("Calling add_return_task")
                 # Extract arguments
-                picking_object = arguments.get("picking_object")
-                # end_effector_offset = arguments.get("end_effector_offset")
-                # end_effector_orientation = arguments.get("end_effector_orientation")
-                # current_joint_positions = arguments.get("current_joint_positions")
-                # if current_joint_positions is None:
-                #     current_joint_positions = robot.get_joint_positions().tolist()
-                # Call the function
+                pour_position = arguments.get("pour_position")
+                return_position = arguments.get("return_position")
                 result = function_to_call(
                     controller_manager=controller_manager,
-                    picking_object=picking_object,
-                    # current_joint_positions=current_joint_positions,
-                    # end_effector_offset=end_effector_offset,
-                    # end_effector_orientation=end_effector_orientation,
+                    pour_position=pour_position,
+                    return_position=return_position,
                     current_observations=current_observations,
                     robot=robot
                 )
