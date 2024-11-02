@@ -3,7 +3,7 @@
 import numpy as np
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
 
-def add_pickmove_task(controller_manager, picking_object, target_object=None, target_position=None, current_observations=None, robot=None):
+def add_pickmove_task(controller_manager, picking_object, target, current_observations=None, robot=None):
     # Validate picking_object
     valid_objects = ['Bottle_Kmno4', 'Bottle_Fecl2', 'beaker_Fecl2', 'beaker_Kmno4']
     if picking_object not in valid_objects:
@@ -12,15 +12,18 @@ def add_pickmove_task(controller_manager, picking_object, target_object=None, ta
     # Get picking_position from observations
     picking_position = current_observations[picking_object]['position']
 
-    # Determine target_position
-    if target_position is not None:
-        target_position = np.array(target_position)
-    elif target_object is not None:
+    # Determine target_position based on the type of 'target'
+    if isinstance(target, str):
+        # target is a target_object
+        target_object = target
         if target_object not in valid_objects:
             return f"Invalid target_object: {target_object}. Must be one of {valid_objects}"
         target_position = current_observations[target_object]['Pour_Position']
+    elif isinstance(target, list) or isinstance(target, np.ndarray):
+        # target is a target_position
+        target_position = np.array(target)
     else:
-        return "Error: Either target_position or target_object must be provided."
+        return "Error: 'target' must be either a valid object name or a numeric position array."
 
     # Set default values
     current_joint_positions = robot.get_joint_positions()
@@ -105,16 +108,6 @@ def get_function_schemas():
                                     "description": "The numeric target position to move the object to."
                                 }
                             ]}
-                        # "target_object": {
-                        #     "type": "string",
-                        #     "enum": ['Bottle_Kmno4', 'Bottle_Fecl2', 'beaker_Fecl2', 'beaker_Kmno4'],
-                        #     "description": "The name of the target object to move to."
-                        # },
-                        # "target_position": {
-                        #     "type": "array",
-                        #     "items": {"type": "number"},
-                        #     "description": "The numeric target position to move the object to."
-                        # }
                     },
                     "required": ["picking_object", "target"],
                     "additionalProperties": False
