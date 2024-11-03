@@ -119,6 +119,7 @@ class Chem_Lab_Task_SL(BaseTask):
         fecl2_position, _ = self._fecl2.get_world_pose()
         fecl2_pour_position = np.add(beaker_Fecl2_position, self._Fecl2_Bottle_Beaker_Pour_Offset)
         beaker_Kmno4_pour_position = np.add(beaker_Fecl2_position, self._pour1_offset)
+        beaker_Fecl2_pour_position = np.add(beaker_Kmno4_position, self._pour1_offset) # new
 
         observations = {
             self.Franka.name: {
@@ -134,7 +135,7 @@ class Chem_Lab_Task_SL(BaseTask):
             self._beaker_Fecl2.name: {
                 "Default_Position": self._beaker_Fecl2_position,
                 "position": beaker_Fecl2_position,
-                # "Pour_Position": beaker_Fecl2_pour_position,
+                "Pour_Position": beaker_Fecl2_pour_position,
                 "Return_Position": self._beaker_Fecl2_Return_position,
                 'Pour_Direction': -1,
             },
