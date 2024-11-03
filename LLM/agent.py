@@ -179,6 +179,7 @@ class AgentLLM:
             elif function_name == "add_pour_task":
                 print("Calling add_pour_task")
                 # Extract arguments
+                picked_object = arguments.get("picked_object")
                 # pour_speed = arguments.get("pour_speed")
                 # current_joint_positions = arguments.get("current_joint_positions")
                 # current_joint_velocities = arguments.get("current_joint_velocities")
@@ -189,6 +190,7 @@ class AgentLLM:
                 # Call the function
                 result = function_to_call(
                     controller_manager=controller_manager,
+                    picked_object=picked_object,
                     # pour_speed=pour_speed,
                     # current_joint_positions=current_joint_positions,
                     # current_joint_velocities=current_joint_velocities,
