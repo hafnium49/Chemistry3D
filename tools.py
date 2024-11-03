@@ -44,6 +44,10 @@ def add_pickmove_task(controller_manager, picking_object, target, current_observ
     return "PickMove task added successfully."
 
 def add_pour_task(controller_manager, picked_object, current_observations=None, robot=None):
+    # Validate picking_object
+    valid_objects = ['Bottle_Kmno4', 'Bottle_Fecl2', 'beaker_Fecl2', 'beaker_Kmno4']
+    if picked_object not in valid_objects:
+        return f"Invalid picking_object: {picked_object}. Must be one of {valid_objects}"
     # # Assume pour_direction is -1 as per assumption
     # pour_direction = -1
     pour_direction = current_observations[picked_object]['Pour_Direction']
