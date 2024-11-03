@@ -117,7 +117,7 @@ class Chem_Lab_Task_SL(BaseTask):
         kmno4_position, _ = self._kmno4.get_world_pose()
         kmno4_pour_position = np.add(beaker_Kmno4_position, self._pour0_offset)
         fecl2_position, _ = self._fecl2.get_world_pose()
-        fecl2_pour_position = np.add(beaker_Fecl2_position, self._Fecl2_Bottle_Beaker_Pour_Offset)
+        fecl2_pour_position = np.add(beaker_Fecl2_position, self._pour0_offset) #self._Fecl2_Bottle_Beaker_Pour_Offset)
         beaker_Kmno4_pour_position = np.add(beaker_Fecl2_position, self._pour1_offset)
         beaker_Fecl2_pour_position = np.add(beaker_Kmno4_position, self._pour1_offset) # new
 
@@ -151,7 +151,7 @@ class Chem_Lab_Task_SL(BaseTask):
                 "position": fecl2_position,
                 "Pour_Position": fecl2_pour_position,
                 "Return_Position": self._Bottle_Fecl2_position + np.array([0, -0.02, 0]),
-                'Pour_Direction': 1,
+                'Pour_Direction': -1, #1,
             }
         }
         return observations

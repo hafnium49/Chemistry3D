@@ -2,6 +2,7 @@
 
 import numpy as np
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
+from math import pi
 
 def add_pickmove_task(controller_manager, picking_object, target, current_observations=None, robot=None):
     # Validate picking_object
@@ -42,11 +43,17 @@ def add_pickmove_task(controller_manager, picking_object, target, current_observ
     controller_manager.add_task('pickmove_controller', param_template)
     return "PickMove task added successfully."
 
-def add_pour_task(controller_manager, pour_speed, current_joint_velocities=None, current_observations=None, robot=None):
+def add_pour_task(controller_manager):
+    # Assume pour_direction is -1 as per assumption
+    pour_direction = -1
+    pour_speed = pour_direction * 55 / 180.0 * pi  # Convert 55 degrees to radians
+
+    # Access robot via controller_manager
+    robot = controller_manager.robot
+
     # Set default values
     current_joint_positions = robot.get_joint_positions()
-    if current_joint_velocities is None:
-        current_joint_velocities = robot.get_joint_velocities()
+    current_joint_velocities = robot.get_joint_velocities()
     franka_art_controller = robot.get_articulation_controller()
 
     param_template = {
@@ -148,26 +155,13 @@ def get_function_schemas():
                 "name": "add_pour_task",
                 "description": (
                     "Adds a pour task to the controller manager. "
-                    "This task performs a pouring action at the robot's current position."
+                    "This task performs a pouring action at the robot's current position. "
+                    "No additional parameters are required."
                 ),
                 "parameters": {
                     "type": "object",
-                    "properties": {
-                        "pour_speed": {
-                            "type": "number",
-                            "description": (
-                                "Speed at which to perform the pour action, in radians per second."
-                            )
-                        },
-                        "current_joint_velocities": {
-                            "type": "array",
-                            "items": {"type": "number"},
-                            "description": (
-                                "Current joint velocities of the robot. Defaults to the robot's current velocities."
-                            )
-                        }
-                    },
-                    "required": ["pour_speed"],
+                    "properties": {},
+                    "required": [],
                     "additionalProperties": False
                 }
             }
