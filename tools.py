@@ -48,8 +48,8 @@ def add_pour_task(controller_manager, current_observations=None, robot=None):
     pour_direction = -1
     pour_speed = pour_direction * 55 / 180.0 * pi  # Convert 55 degrees to radians
 
-    # Access robot via controller_manager
-    robot = controller_manager.robot
+    # # Access robot via controller_manager
+    # robot = controller_manager.robot
 
     # Set default values
     current_joint_positions = robot.get_joint_positions()
