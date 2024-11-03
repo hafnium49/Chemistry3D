@@ -179,19 +179,19 @@ class AgentLLM:
             elif function_name == "add_pour_task":
                 print("Calling add_pour_task")
                 # Extract arguments
-                pour_speed = arguments.get("pour_speed")
-                current_joint_positions = arguments.get("current_joint_positions")
-                current_joint_velocities = arguments.get("current_joint_velocities")
-                if current_joint_positions is None:
-                    current_joint_positions = robot.get_joint_positions().tolist()
-                if current_joint_velocities is None:
-                    current_joint_velocities = robot.get_joint_velocities().tolist()
+                # pour_speed = arguments.get("pour_speed")
+                # current_joint_positions = arguments.get("current_joint_positions")
+                # current_joint_velocities = arguments.get("current_joint_velocities")
+                # if current_joint_positions is None:
+                #     current_joint_positions = robot.get_joint_positions().tolist()
+                # if current_joint_velocities is None:
+                #     current_joint_velocities = robot.get_joint_velocities().tolist()
                 # Call the function
                 result = function_to_call(
                     controller_manager=controller_manager,
-                    pour_speed=pour_speed,
-                    current_joint_positions=current_joint_positions,
-                    current_joint_velocities=current_joint_velocities,
+                    # pour_speed=pour_speed,
+                    # current_joint_positions=current_joint_positions,
+                    # current_joint_velocities=current_joint_velocities,
                     current_observations=current_observations,
                     robot=robot
                 )
