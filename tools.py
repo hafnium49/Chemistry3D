@@ -43,7 +43,7 @@ def add_pickmove_task(controller_manager, picking_object, target, current_observ
     controller_manager.add_task('pickmove_controller', param_template)
     return "PickMove task added successfully."
 
-def add_pour_task(controller_manager):
+def add_pour_task(controller_manager, current_observations=None, robot=None):
     # Assume pour_direction is -1 as per assumption
     pour_direction = -1
     pour_speed = pour_direction * 55 / 180.0 * pi  # Convert 55 degrees to radians
