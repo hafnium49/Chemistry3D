@@ -43,9 +43,10 @@ def add_pickmove_task(controller_manager, picking_object, target, current_observ
     controller_manager.add_task('pickmove_controller', param_template)
     return "PickMove task added successfully."
 
-def add_pour_task(controller_manager, current_observations=None, robot=None):
-    # Assume pour_direction is -1 as per assumption
-    pour_direction = -1
+def add_pour_task(controller_manager, picked_object, current_observations=None, robot=None):
+    # # Assume pour_direction is -1 as per assumption
+    # pour_direction = -1
+    pour_direction = current_observations[picked_object]['Pour_Direction']
     pour_speed = pour_direction * 55 / 180.0 * pi  # Convert 55 degrees to radians
 
     # # Access robot via controller_manager
@@ -156,12 +157,20 @@ def get_function_schemas():
                 "description": (
                     "Adds a pour task to the controller manager. "
                     "This task performs a pouring action at the robot's current position. "
-                    "No additional parameters are required."
+                    "Note: The 'picked_object' must be equivalent to the 'picking_object' of the last step."
                 ),
                 "parameters": {
                     "type": "object",
-                    "properties": {},
-                    "required": [],
+                    "properties": {
+                        "picked_object": {
+                            "type": "string",
+                            "enum": ['Bottle_Kmno4', 'Bottle_Fecl2', 'beaker_Fecl2', 'beaker_Kmno4'],
+                            "description": (
+                                "The name of the holding object. This defines the pour direction of the task."
+                            )
+                        },
+                    },
+                    "required": ["picked_object"],
                     "additionalProperties": False
                 }
             }
