@@ -188,12 +188,12 @@ class AgentLLM:
                 #     current_joint_velocities = robot.get_joint_velocities().tolist()
                 # Call the function
                 result = function_to_call(
-                    controller_manager=controller_manager,
+                    controller_manager=controller_manager #,
                     # pour_speed=pour_speed,
                     # current_joint_positions=current_joint_positions,
                     # current_joint_velocities=current_joint_velocities,
-                    current_observations=current_observations,
-                    robot=robot
+                    # current_observations=current_observations,
+                    # robot=robot
                 )
                 return result
 
