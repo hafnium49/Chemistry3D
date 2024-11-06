@@ -18,7 +18,6 @@ import asyncio
 import websockets  # Ensure this package is installed: pip install websockets
 import json
 import threading
-from queue import Queue
 
 # Get the current directory
 current_directory = os.path.dirname(os.path.abspath(__file__))  # os.getcwd()
@@ -49,9 +48,10 @@ class Chemistry3DMAS(BaseSample):
         # WebSocket setup
         self.tool_calls = None
         self.tool_calls_lock = threading.Lock()
-        self.websocket_thread = threading.Thread(target=self.run_websocket_server)
-        self.websocket_thread.daemon = True
-        self.websocket_thread.start()
+
+        # Initialize an asyncio event loop
+        self.loop = asyncio.get_event_loop()
+        self.websocket_server = None  # Will hold the server object
 
     def setup_scene(self):
         world = self.get_world()
@@ -120,6 +120,9 @@ class Chemistry3DMAS(BaseSample):
         self.Sim_Beaker_Fecl2.sim_update(self.Sim_Bottle_Fecl2, self.Franka, self.controller_manager)
         self.Sim_Beaker_Fecl2.sim_update(self.Sim_Beaker_Kmno4, self.Franka, self.controller_manager)
 
+        # Start the WebSocket server
+        await self.start_websocket_server()
+
         # Register physics callback
         world.add_physics_callback("sim_step", self.sim_step)
 
@@ -131,6 +134,11 @@ class Chemistry3DMAS(BaseSample):
         # Reset the controller manager
         if self.controller_manager:
             self.controller_manager.reset()
+        # Stop the WebSocket server
+        if self.websocket_server:
+            self.websocket_server.close()
+            await self.websocket_server.wait_closed()
+            self.websocket_server = None
 
     async def setup_post_reset(self):
         world = self.get_world()
@@ -178,6 +186,9 @@ class Chemistry3DMAS(BaseSample):
         # Re-initialize variables
         self.controllers_ready = False
 
+        # Start the WebSocket server again
+        await self.start_websocket_server()
+
         # Register physics callback again
         world.add_physics_callback("sim_step", self.sim_step)
 
@@ -195,10 +206,14 @@ class Chemistry3DMAS(BaseSample):
         self.Sim_Beaker_Fecl2 = None
         self.tool_calls = None
         self.tool_calls_lock = None
+        # Stop the WebSocket server if it's running
+        if self.websocket_server:
+            self.websocket_server.close()
+            await self.websocket_server.wait_closed()
+            self.websocket_server = None
 
-    # Remove the get_user_input method since we're using WebSocket
-
-    def run_websocket_server(self):
+    # Modify run_websocket_server to be compatible with Isaac Sim's event loop
+    async def start_websocket_server(self):
         async def handler(websocket, path):
             print(f"Client connected from {websocket.remote_address}")
             try:
@@ -225,16 +240,10 @@ class Chemistry3DMAS(BaseSample):
             finally:
                 print(f"Connection with client {websocket.remote_address} closed")
 
-        async def start_server():
-            print("Starting WebSocket server...")
-            server = await websockets.serve(handler, 'localhost', 8765)
-            print("WebSocket server started and listening on ws://localhost:8765")
-            await server.wait_closed()
-
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(start_server())
-        loop.run_forever()
+        # Start the server and keep a reference to it
+        print("Starting WebSocket server...")
+        self.websocket_server = await websockets.serve(handler, 'localhost', 8765)
+        print("WebSocket server started and listening on ws://localhost:8765")
 
     def sim_step(self, step_size):
         world = self.get_world()
