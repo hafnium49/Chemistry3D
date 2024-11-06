@@ -49,9 +49,7 @@ class Chemistry3DMAS(BaseSample):
         # WebSocket setup
         self.tool_calls = None
         self.tool_calls_lock = threading.Lock()
-        self.websocket_thread = threading.Thread(target=self.run_websocket_server)
-        self.websocket_thread.daemon = True
-        self.websocket_thread.start()
+        self.websocket_thread = None  # Initialize the thread variable
 
     def setup_scene(self):
         world = self.get_world()
@@ -123,6 +121,16 @@ class Chemistry3DMAS(BaseSample):
         # Register physics callback
         world.add_physics_callback("sim_step", self.sim_step)
 
+        # Start the WebSocket server after setup
+        self.start_websocket_server()
+
+    def start_websocket_server(self):
+        if self.websocket_thread is None:
+            self.websocket_thread = threading.Thread(target=self.run_websocket_server)
+            self.websocket_thread.daemon = True
+            self.websocket_thread.start()
+            print("WebSocket server thread started.")
+
     async def setup_pre_reset(self):
         world = self.get_world()
         # Remove physics callback
@@ -183,6 +191,9 @@ class Chemistry3DMAS(BaseSample):
 
         # Register physics callback again
         world.add_physics_callback("sim_step", self.sim_step)
+
+        # Start the WebSocket server again
+        self.start_websocket_server()
 
     async def setup_post_clear(self):
         # Clean up
