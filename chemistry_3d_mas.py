@@ -18,9 +18,10 @@ import asyncio
 import websockets  # Ensure this package is installed: pip install websockets
 import json
 import threading
+import sys
 
 # Get the current directory
-current_directory = os.path.dirname(os.path.abspath(__file__))  # os.getcwd()
+current_directory = os.path.dirname(os.path.abspath(__file__))
 proposed_str_path = os.path.join(current_directory, 'LLM/Proposed_str')
 
 class Chemistry3DMAS(BaseSample):
@@ -48,10 +49,9 @@ class Chemistry3DMAS(BaseSample):
         # WebSocket setup
         self.tool_calls = None
         self.tool_calls_lock = threading.Lock()
-
-        # Initialize an asyncio event loop
-        self.loop = asyncio.get_event_loop()
-        self.websocket_server = None  # Will hold the server object
+        self.websocket_thread = threading.Thread(target=self.run_websocket_server)
+        self.websocket_thread.daemon = True
+        self.websocket_thread.start()
 
     def setup_scene(self):
         world = self.get_world()
@@ -120,9 +120,6 @@ class Chemistry3DMAS(BaseSample):
         self.Sim_Beaker_Fecl2.sim_update(self.Sim_Bottle_Fecl2, self.Franka, self.controller_manager)
         self.Sim_Beaker_Fecl2.sim_update(self.Sim_Beaker_Kmno4, self.Franka, self.controller_manager)
 
-        # Start the WebSocket server
-        await self.start_websocket_server()
-
         # Register physics callback
         world.add_physics_callback("sim_step", self.sim_step)
 
@@ -135,10 +132,8 @@ class Chemistry3DMAS(BaseSample):
         if self.controller_manager:
             self.controller_manager.reset()
         # Stop the WebSocket server
-        if self.websocket_server:
-            self.websocket_server.close()
-            await self.websocket_server.wait_closed()
-            self.websocket_server = None
+        if hasattr(self, 'server') and self.server:
+            await self.shutdown_websocket_server()
 
     async def setup_post_reset(self):
         world = self.get_world()
@@ -186,9 +181,6 @@ class Chemistry3DMAS(BaseSample):
         # Re-initialize variables
         self.controllers_ready = False
 
-        # Start the WebSocket server again
-        await self.start_websocket_server()
-
         # Register physics callback again
         world.add_physics_callback("sim_step", self.sim_step)
 
@@ -207,44 +199,66 @@ class Chemistry3DMAS(BaseSample):
         self.tool_calls = None
         self.tool_calls_lock = None
         # Stop the WebSocket server if it's running
-        if self.websocket_server:
-            self.websocket_server.close()
-            await self.websocket_server.wait_closed()
-            self.websocket_server = None
+        if hasattr(self, 'server') and self.server:
+            await self.shutdown_websocket_server()
 
-    # Modify run_websocket_server to be compatible with Isaac Sim's event loop
-    async def start_websocket_server(self):
-        async def handler(websocket, path):
-            print(f"Client connected from {websocket.remote_address}")
-            try:
-                async for message in websocket:
-                    # Process the message
-                    print(f"Received message: {message}")
-                    try:
-                        # Assume message is a JSON string containing tool_calls
-                        tool_calls = json.loads(message)
-                        with self.tool_calls_lock:
-                            self.tool_calls = tool_calls
-                        # Optionally send a response back
-                        response = "Message received and processed"
-                        await websocket.send(response)
-                        print(f"Sent response: {response}")
-                    except json.JSONDecodeError as e:
-                        error_msg = f"JSON decode error: {e}"
-                        print(error_msg)
-                        await websocket.send(error_msg)
-            except websockets.ConnectionClosed as e:
-                print(f"Client disconnected: {e}")
-            except Exception as e:
-                print(f"Unexpected error: {e}")
-            finally:
-                print(f"Connection with client {websocket.remote_address} closed")
+    def run_websocket_server(self):
+        # This method will run in a separate thread
+        import asyncio
+
+        # For Windows compatibility
+        if sys.platform.startswith('win'):
+            asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
 
         # Start the server and keep a reference to it
+        start_server = websockets.serve(self.websocket_handler, 'localhost', 8765)
+        self.server = loop.run_until_complete(start_server)
         print("Starting WebSocket server...")
-        port_number = 8777
-        self.websocket_server = await websockets.serve(handler, 'localhost', port_number)
-        print(f"WebSocket server started and listening on ws://localhost:{port_number}")
+        print("WebSocket server started and listening on ws://localhost:8765")
+
+        try:
+            loop.run_forever()
+        except KeyboardInterrupt:
+            pass
+        finally:
+            loop.run_until_complete(self.shutdown_websocket_server())
+            loop.close()
+
+    async def websocket_handler(self, websocket, path):
+        print(f"Client connected from {websocket.remote_address}")
+        try:
+            async for message in websocket:
+                # Process the message
+                print(f"Received message: {message}")
+                try:
+                    # Assume message is a JSON string containing tool_calls
+                    tool_calls = json.loads(message)
+                    with self.tool_calls_lock:
+                        self.tool_calls = tool_calls
+                    # Optionally send a response back
+                    response = "Message received and processed"
+                    await websocket.send(response)
+                    print(f"Sent response: {response}")
+                except json.JSONDecodeError as e:
+                    error_msg = f"JSON decode error: {e}"
+                    print(error_msg)
+                    await websocket.send(error_msg)
+        except websockets.ConnectionClosed as e:
+            print(f"Client disconnected: {e}")
+        except Exception as e:
+            print(f"Unexpected error: {e}")
+        finally:
+            print(f"Connection with client {websocket.remote_address} closed")
+
+    async def shutdown_websocket_server(self):
+        # Close the server
+        self.server.close()
+        await self.server.wait_closed()
+        print("WebSocket server closed")
+        self.server = None
 
     def sim_step(self, step_size):
         world = self.get_world()
