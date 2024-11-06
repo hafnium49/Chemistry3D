@@ -242,8 +242,9 @@ class Chemistry3DMAS(BaseSample):
 
         # Start the server and keep a reference to it
         print("Starting WebSocket server...")
-        self.websocket_server = await websockets.serve(handler, 'localhost', 8765)
-        print("WebSocket server started and listening on ws://localhost:8765")
+        port_number = 8777
+        self.websocket_server = await websockets.serve(handler, 'localhost', port_number)
+        print(f"WebSocket server started and listening on ws://localhost:{port_number}")
 
     def sim_step(self, step_size):
         world = self.get_world()
