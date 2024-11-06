@@ -200,24 +200,40 @@ class Chemistry3DMAS(BaseSample):
 
     def run_websocket_server(self):
         async def handler(websocket, path):
-            async for message in websocket:
-                # Process the message
-                print(f"Received message: {message}")
-                try:
-                    # Assume message is a JSON string containing tool_calls
-                    tool_calls = json.loads(message)
-                    with self.tool_calls_lock:
-                        self.tool_calls = tool_calls
-                    # Optionally send a response back
-                    await websocket.send("Message received")
-                except json.JSONDecodeError as e:
-                    print(f"JSON decode error: {e}")
-                    await websocket.send("Invalid JSON format")
+            print(f"Client connected from {websocket.remote_address}")
+            try:
+                async for message in websocket:
+                    # Process the message
+                    print(f"Received message: {message}")
+                    try:
+                        # Assume message is a JSON string containing tool_calls
+                        tool_calls = json.loads(message)
+                        with self.tool_calls_lock:
+                            self.tool_calls = tool_calls
+                        # Optionally send a response back
+                        response = "Message received and processed"
+                        await websocket.send(response)
+                        print(f"Sent response: {response}")
+                    except json.JSONDecodeError as e:
+                        error_msg = f"JSON decode error: {e}"
+                        print(error_msg)
+                        await websocket.send(error_msg)
+            except websockets.ConnectionClosed as e:
+                print(f"Client disconnected: {e}")
+            except Exception as e:
+                print(f"Unexpected error: {e}")
+            finally:
+                print(f"Connection with client {websocket.remote_address} closed")
+
+        async def start_server():
+            print("Starting WebSocket server...")
+            server = await websockets.serve(handler, 'localhost', 8765)
+            print("WebSocket server started and listening on ws://localhost:8765")
+            await server.wait_closed()
 
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        server = websockets.serve(handler, 'localhost', 8765)
-        loop.run_until_complete(server)
+        loop.run_until_complete(start_server())
         loop.run_forever()
 
     def sim_step(self, step_size):
