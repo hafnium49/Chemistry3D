@@ -12,6 +12,8 @@ import os
 from omni.isaac.examples.user_examples.LLM.mas import MAS
 from omni.isaac.examples.user_examples.Sim_Container import Sim_Container
 from pxr import Sdf, UsdPhysics, PhysxSchema
+import asyncio
+import websockets
 
 # Get the current directory
 current_directory = os.path.dirname(os.path.abspath(__file__)) #os.getcwd()
@@ -117,6 +119,9 @@ class Chemistry3DMAS(BaseSample):
 
         # Register physics callback
         world.add_physics_callback("sim_step", self.sim_step)
+
+        # Start the WebSocket server
+        asyncio.create_task(self.start_websocket_server())
 
     async def setup_pre_reset(self):
         world = self.get_world()
@@ -288,3 +293,12 @@ class Chemistry3DMAS(BaseSample):
     async def on_start_simulation_async(self):
         world = self.get_world()
         await world.play_async()
+
+    async def websocket_handler(self, websocket, path):
+        async for message in websocket:
+            # Process the message
+            await websocket.send('Acknowledged')
+
+    async def start_websocket_server(self):
+        server = await websockets.serve(self.websocket_handler, 'localhost', 8765)
+        await server.wait_closed()
