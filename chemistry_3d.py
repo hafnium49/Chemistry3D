@@ -12,6 +12,9 @@ from omni.isaac.examples.user_examples.Chemistry3D_Task import Chem_Lab_Task
 from omni.isaac.examples.user_examples.Controllers.Controller_Manager import ControllerManager
 from omni.isaac.examples.user_examples.Sim_Container import Sim_Container
 
+import asyncio
+import websockets
+
 class Chemistry3D(BaseSample):
     def __init__(self) -> None:
         super().__init__()
@@ -29,6 +32,15 @@ class Chemistry3D(BaseSample):
         self.Sim_Bottle2 = None
         self.Sim_Beaker1 = None
         self.Sim_Beaker2 = None
+        self.websocket_server = None
+
+    async def handler(self, websocket, path):
+        async for message in websocket:
+            # Process the message
+            await websocket.send('Acknowledged')
+
+    async def start_websocket_server(self):
+        self.websocket_server = await websockets.serve(self.handler, 'localhost', 8765)
 
     def setup_scene(self):
         world = self.get_world()
@@ -97,6 +109,8 @@ class Chemistry3D(BaseSample):
         # self.Sim_Beaker2.sim_update(self.Sim_Bottle2, self.Franka0, self.controller_manager)
         # self.Sim_Beaker2.sim_update(self.Sim_Beaker1, self.Franka0, self.controller_manager)
 
+        await self.start_websocket_server()
+
     def _on_simulation_step(self, step_size):
         world = self.get_world()
         if world.is_playing():
@@ -123,6 +137,9 @@ class Chemistry3D(BaseSample):
             world.remove_physics_callback("sim_step")
         if self.controller_manager:
             self.controller_manager.reset()
+        if self.websocket_server:
+            self.websocket_server.close()
+            await self.websocket_server.wait_closed()
         return
 
     def world_cleanup(self):
@@ -134,4 +151,5 @@ class Chemistry3D(BaseSample):
         self.Sim_Bottle2 = None
         self.Sim_Beaker1 = None
         self.Sim_Beaker2 = None
+        self.websocket_server = None
         return
