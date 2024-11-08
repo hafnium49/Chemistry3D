@@ -13,8 +13,12 @@ from omni.isaac.examples.user_examples.LLM.mas import MAS
 from omni.isaac.examples.user_examples.Sim_Container import Sim_Container
 from pxr import Sdf, UsdPhysics, PhysxSchema
 
+# Import necessary libraries for WebSocket client
+import socketio
+import asyncio
+
 # Get the current directory
-current_directory = os.path.dirname(os.path.abspath(__file__)) #os.getcwd()
+current_directory = os.path.dirname(os.path.abspath(__file__))
 proposed_str_path = os.path.join(current_directory, 'LLM/Proposed_str')
 
 class Chemistry3DMAS(BaseSample):
@@ -40,6 +44,16 @@ class Chemistry3DMAS(BaseSample):
         self.Sim_Bottle_Fecl2 = None
         self.Sim_Beaker_Kmno4 = None
         self.Sim_Beaker_Fecl2 = None
+
+        # Initialize WebSocket client
+        self.sio = socketio.Client()
+        self.tool_calls_queue = []
+        self.websocket_connected = False
+
+        # Start WebSocket client in a separate thread
+        self.websocket_thread = threading.Thread(target=self.start_websocket_client)
+        self.websocket_thread.daemon = True
+        self.websocket_thread.start()
 
     def setup_scene(self):
         world = self.get_world()
@@ -102,7 +116,7 @@ class Chemistry3DMAS(BaseSample):
         # Initialize the MAS system
         self.mas = MAS(world, self.controller_manager)
 
-        # # Perform simulation updates
+        # Perform simulation updates
         self.Sim_Beaker_Kmno4.sim_update(self.Sim_Bottle_Kmno4, self.Franka, self.controller_manager)        
         self.Sim_Beaker_Kmno4.sim_update(self.Sim_Beaker_Fecl2, self.Franka, self.controller_manager) # Added
         self.Sim_Beaker_Fecl2.sim_update(self.Sim_Bottle_Fecl2, self.Franka, self.controller_manager)
@@ -201,45 +215,29 @@ class Chemistry3DMAS(BaseSample):
         while True:
             self.user_prompt = input("Enter your task: ")
 
-    # def sim_step(self, step_size):
-    #     world = self.get_world()
-    #     if world.is_playing():
-    #         if world.current_time_step_index == 0:
-    #             world.reset()
-    #             self.controller_manager.reset()
-    #         current_observations = world.get_observations()
-    #         if self.user_prompt and not self.controllers_ready:
-    #             print(f"Current Observations: {current_observations}")
-    #             print('Code generating...')
-    #             # Generate controllers based on the user prompt
-    #             controllers_dic = self.mas._generate_controllers(self.user_prompt, current_observations)
-    #             # controllers_str = self.mas._generate_controllers(self.user_prompt, current_observations)
-    #             with open(f'{proposed_str_path}/controllers_dic.txt', 'a') as file:
-    #                 file.write(str(controllers_dic))
-    #             # self.mas._generate_code_str(controllers_str)
-    #             self.mas._execute_code_str(code=controllers_dic)
+    def start_websocket_client(self):
+        # Define event handlers
+        @self.sio.event
+        def connect():
+            print('WebSocket client connected to the server')
+            self.websocket_connected = True
 
-    #             add_controllers_dic = self.mas._add_controllers(str(controllers_dic))
-    #             with open(f'{proposed_str_path}/add_controllers_dic.txt', 'a') as file:
-    #                 file.write(str(add_controllers_dic))
-    #             # self.mas._generate_code_str(add_controllers_str)
-    #             self.mas._execute_code_str(code=add_controllers_dic)
+        @self.sio.event
+        def disconnect():
+            print('WebSocket client disconnected from the server')
+            self.websocket_connected = False
 
-    #             add_tasks_dic = self.mas._add_tasks(str(add_controllers_dic))
-    #             with open(f'{proposed_str_path}/add_tasks_dic.txt', 'a') as file:
-    #                 file.write("\n\n"+str(add_tasks_dic))
-    #             # self.mas._generate_code_str(add_tasks_str)
-    #             self.mas._execute_code_str(code=add_tasks_dic)
+        @self.sio.event
+        def tool_call(data):
+            print('Received tool_call from server:', data)
+            self.tool_calls_queue.append(data)
 
-    #             self.controllers_ready = True
-    #             print('Controllers executing...')
-    #         if self.controllers_ready:
-    #             # Execute the controller manager
-    #             self.controller_manager.execute(current_observations=current_observations)
-    #             if self.controller_manager.is_done():
-    #                 world.pause()
-    #                 self.controllers_ready = False  # Reset for next user prompt
-    #                 self.user_prompt = None
+        # Connect to the WebSocket server
+        try:
+            self.sio.connect('http://localhost:8080')  # Replace with your server's address and port
+            self.sio.wait()
+        except Exception as e:
+            print('Failed to connect to WebSocket server:', e)
 
     def sim_step(self, step_size):
         world = self.get_world()
@@ -248,35 +246,45 @@ class Chemistry3DMAS(BaseSample):
                 world.reset()
                 self.controller_manager.reset()
             current_observations = world.get_observations()
+
             if self.user_prompt and not self.controllers_ready:
                 print(f"Current Observations: {current_observations}")
-                print('Generating response...')
-                # Generate response using function calling
-                assistant_response = self.mas.agent_assistant.generate_response(f"Current observations:\n{current_observations}\n\nUser prompt: {self.user_prompt}")
+                print('Waiting for tool_calls from WebSocket server...')
 
-                # Check if assistant_response is a function call
-                # if assistant_response and assistant_response.tool_calls:
-                try:
-                    # Iterate through tool calls to handle each weather check
-                    for k, tool_call in enumerate(assistant_response.tool_calls):
-                        print(f"Step {k+1}.")
-                        # Handle the function call
-                        result = self.mas.agent_assistant.handle_function_call(
-                            tool_call=tool_call,
-                            global_dict=globals(),
-                            controller_manager=self.controller_manager,
-                            current_observations=current_observations,
-                            robot=self.Franka
-                        )
+                # Send user prompt and observations to the server
+                if self.websocket_connected:
+                    # message = {
+                    #     'user_prompt': self.user_prompt,
+                    #     'current_observations': str(current_observations)
+                    # }
+                    # self.sio.emit('user_input', message)
+                    self.sio.emit('chat message', f"Current Observations: {current_observations}")
+                else:
+                    print('WebSocket is not connected. Cannot send user input.')
 
-                        print(f"Function call result: {result}")
-                    self.controllers_ready = True
-                    print('Controllers executing...')
-                except Exception as e:
-                    if assistant_response:
-                        # Handle regular assistant response
-                        print(f"Assistant: {assistant_response}")
-                    print(f"Error: {e}")
+                # Wait for tool_calls to be received
+                if self.tool_calls_queue:
+                    assistant_response = self.tool_calls_queue.pop(0)
+                    try:
+                        # Iterate through tool calls to handle each function call
+                        for k, tool_call in enumerate(assistant_response['tool_calls']):
+                            print(f"Step {k+1}.")
+                            # Handle the function call
+                            result = self.mas.agent_assistant.handle_function_call(
+                                tool_call=tool_call,
+                                global_dict=globals(),
+                                controller_manager=self.controller_manager,
+                                current_observations=current_observations,
+                                robot=self.Franka
+                            )
+                            print(f"Function call result: {result}")
+                        self.controllers_ready = True
+                        print('Controllers executing...')
+                    except Exception as e:
+                        print(f"Error processing tool_calls: {e}")
+                else:
+                    print('No tool_calls received yet.')
+
             if self.controllers_ready:
                 # Execute the controller manager
                 self.controller_manager.execute(current_observations=current_observations)
