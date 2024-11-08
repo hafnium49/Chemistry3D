@@ -254,6 +254,10 @@ class Chemistry3DMAS(BaseSample):
             self.print_and_send('Received tool_call from server')
             self.tool_calls_queue.append(data)
 
+        @self.sio.on('server message')
+        def on_server_message(data):
+            self.print_and_send(f"Server message received: {data}")
+
         # Connect to the WebSocket server
         try:
             self.sio.connect('http://localhost:8080')  # Replace with your server's address and port
@@ -295,7 +299,7 @@ class Chemistry3DMAS(BaseSample):
                 self.last_observation_time = current_time
 
             if self.user_prompt and not self.controllers_ready:
-                self.print_and_send('Waiting for tool_calls from WebSocket server...')
+                # self.print_and_send('Waiting for tool_calls from WebSocket server...')
 
                 # Send user prompt and observations to the server
                 if self.websocket_connected:
@@ -322,13 +326,13 @@ class Chemistry3DMAS(BaseSample):
                                 current_observations=current_observations,
                                 robot=self.Franka
                             )
-                            self.print_and_send(f"Function call result: {result}")
+                            # self.print_and_send(f"Function call result: {result}")
                         self.controllers_ready = True
                         self.print_and_send('Controllers executing...')
                     except Exception as e:
                         self.print_and_send(f"Error processing tool_calls: {e}")
-                else:
-                    self.print_and_send('No tool_calls received yet.')
+                # else:
+                #     self.print_and_send('No tool_calls received yet.')
 
             if self.controllers_ready:
                 # Execute the controller manager
