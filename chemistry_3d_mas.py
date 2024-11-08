@@ -16,6 +16,7 @@ from pxr import Sdf, UsdPhysics, PhysxSchema
 # Import necessary libraries for WebSocket client
 import socketio
 import asyncio
+import copy  # For deep copying observations
 
 # Get the current directory
 current_directory = os.path.dirname(os.path.abspath(__file__))
@@ -50,6 +51,9 @@ class Chemistry3DMAS(BaseSample):
         self.tool_calls_queue = []
         self.websocket_connected = False
 
+        # Initialize previous observations
+        self.previous_observations = None
+
         # Start WebSocket client in a separate thread
         self.websocket_thread = threading.Thread(target=self.start_websocket_client)
         self.websocket_thread.daemon = True
@@ -61,8 +65,7 @@ class Chemistry3DMAS(BaseSample):
         # Send to WebSocket server if connected
         if self.websocket_connected:
             try:
-                self.sio.emit('chat message', str(message))
-                # self.sio.emit('log_message', {'message': message})
+                self.sio.emit('log_message', {'message': message})
             except Exception as e:
                 print(f'Error sending message to WebSocket server: {e}')
 
@@ -198,6 +201,7 @@ class Chemistry3DMAS(BaseSample):
         # Re-initialize variables
         self.user_prompt = None
         self.controllers_ready = False
+        self.previous_observations = None  # Reset previous observations
 
         # Start user input thread again
         self.input_thread = threading.Thread(target=self.get_user_input)
@@ -221,6 +225,7 @@ class Chemistry3DMAS(BaseSample):
         self.Sim_Bottle_Fecl2 = None
         self.Sim_Beaker_Kmno4 = None
         self.Sim_Beaker_Fecl2 = None
+        self.previous_observations = None
 
     def get_user_input(self):
         while True:
@@ -245,7 +250,7 @@ class Chemistry3DMAS(BaseSample):
 
         # Connect to the WebSocket server
         try:
-            self.sio.connect('http://localhost:8080')  # Replace with your server's address and port
+            self.sio.connect('http://your-server-address:your-port')  # Replace with your server's address and port
             self.sio.wait()
         except Exception as e:
             self.print_and_send(f'Failed to connect to WebSocket server: {e}')
@@ -258,8 +263,12 @@ class Chemistry3DMAS(BaseSample):
                 self.controller_manager.reset()
             current_observations = world.get_observations()
 
-            if self.user_prompt and not self.controllers_ready:
+            # Check if observations have changed
+            if self.previous_observations != current_observations:
                 self.print_and_send(f"Current Observations: {current_observations}")
+                self.previous_observations = copy.deepcopy(current_observations)
+
+            if self.user_prompt and not self.controllers_ready:
                 self.print_and_send('Waiting for tool_calls from WebSocket server...')
 
                 # Send user prompt and observations to the server
@@ -268,7 +277,7 @@ class Chemistry3DMAS(BaseSample):
                         'user_prompt': self.user_prompt,
                         'current_observations': current_observations
                     }
-                    # self.sio.emit('user_input', message)
+                    self.sio.emit('user_input', message)
                 else:
                     self.print_and_send('WebSocket is not connected. Cannot send user input.')
 
