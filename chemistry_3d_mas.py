@@ -13,11 +13,12 @@ from omni.isaac.examples.user_examples.LLM.mas import MAS
 from omni.isaac.examples.user_examples.Sim_Container import Sim_Container
 from pxr import Sdf, UsdPhysics, PhysxSchema
 
-# Import necessary libraries for WebSocket client
+# Import necessary libraries
 import socketio
 import asyncio
 import numpy as np
 import copy  # For deep copying observations
+import time  # For time tracking
 
 # Get the current directory
 current_directory = os.path.dirname(os.path.abspath(__file__))
@@ -52,8 +53,9 @@ class Chemistry3DMAS(BaseSample):
         self.tool_calls_queue = []
         self.websocket_connected = False
 
-        # Initialize previous observations
+        # Initialize previous observations and timing
         self.previous_observations = None
+        self.last_observation_time = None  # For limiting print rate
 
         # Start WebSocket client in a separate thread
         self.websocket_thread = threading.Thread(target=self.start_websocket_client)
@@ -204,6 +206,7 @@ class Chemistry3DMAS(BaseSample):
         self.user_prompt = None
         self.controllers_ready = False
         self.previous_observations = None  # Reset previous observations
+        self.last_observation_time = None  # Reset last observation time
 
         # Start user input thread again
         self.input_thread = threading.Thread(target=self.get_user_input)
@@ -228,6 +231,7 @@ class Chemistry3DMAS(BaseSample):
         self.Sim_Beaker_Kmno4 = None
         self.Sim_Beaker_Fecl2 = None
         self.previous_observations = None
+        self.last_observation_time = None
 
     def get_user_input(self):
         while True:
@@ -282,14 +286,16 @@ class Chemistry3DMAS(BaseSample):
                 world.reset()
                 self.controller_manager.reset()
             current_observations = world.get_observations()
+            current_time = time.time()
 
-            # Check if observations have changed
-            if self.previous_observations is None or self.observations_changed(self.previous_observations, current_observations):
+            # Check if observations have changed and limit print rate to 1 Hz
+            if (self.previous_observations is None or self.observations_changed(self.previous_observations, current_observations)) and (self.last_observation_time is None or (current_time - self.last_observation_time) >= 1.0):
                 self.print_and_send(f"Current Observations: {current_observations}")
                 self.previous_observations = copy.deepcopy(current_observations)
+                self.last_observation_time = current_time
 
             if self.user_prompt and not self.controllers_ready:
-                # self.print_and_send('Waiting for tool_calls from WebSocket server...')
+                self.print_and_send('Waiting for tool_calls from WebSocket server...')
 
                 # Send user prompt and observations to the server
                 if self.websocket_connected:
@@ -321,8 +327,8 @@ class Chemistry3DMAS(BaseSample):
                         self.print_and_send('Controllers executing...')
                     except Exception as e:
                         self.print_and_send(f"Error processing tool_calls: {e}")
-                # else:
-                #     self.print_and_send('No tool_calls received yet.')
+                else:
+                    self.print_and_send('No tool_calls received yet.')
 
             if self.controllers_ready:
                 # Execute the controller manager
