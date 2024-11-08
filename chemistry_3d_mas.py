@@ -55,6 +55,17 @@ class Chemistry3DMAS(BaseSample):
         self.websocket_thread.daemon = True
         self.websocket_thread.start()
 
+    def print_and_send(self, message):
+        # Print to terminal
+        print(message)
+        # Send to WebSocket server if connected
+        if self.websocket_connected:
+            try:
+                self.sio.emit('chat message', str(message))
+                # self.sio.emit('log_message', {'message': message})
+            except Exception as e:
+                print(f'Error sending message to WebSocket server: {e}')
+
     def setup_scene(self):
         world = self.get_world()
         # Enable GPU dynamics
@@ -89,9 +100,9 @@ class Chemistry3DMAS(BaseSample):
 
         # Get the robot and initialize it
         self.Franka = world.scene.get_object("Franka")
-        print(f"Franka: {self.Franka}")
+        self.print_and_send(f"Franka: {self.Franka}")
         if self.Franka is None:
-            print("Franka robot not found in the scene.")
+            self.print_and_send("Franka robot not found in the scene.")
         self.mycamera = world.scene.get_object("camera")
 
         # Initialize the controller manager
@@ -117,8 +128,8 @@ class Chemistry3DMAS(BaseSample):
         self.mas = MAS(world, self.controller_manager)
 
         # Perform simulation updates
-        self.Sim_Beaker_Kmno4.sim_update(self.Sim_Bottle_Kmno4, self.Franka, self.controller_manager)        
-        self.Sim_Beaker_Kmno4.sim_update(self.Sim_Beaker_Fecl2, self.Franka, self.controller_manager) # Added
+        self.Sim_Beaker_Kmno4.sim_update(self.Sim_Bottle_Kmno4, self.Franka, self.controller_manager)
+        self.Sim_Beaker_Kmno4.sim_update(self.Sim_Beaker_Fecl2, self.Franka, self.controller_manager)  # Added
         self.Sim_Beaker_Fecl2.sim_update(self.Sim_Bottle_Fecl2, self.Franka, self.controller_manager)
         self.Sim_Beaker_Fecl2.sim_update(self.Sim_Beaker_Kmno4, self.Franka, self.controller_manager)
 
@@ -151,9 +162,9 @@ class Chemistry3DMAS(BaseSample):
 
         # Re-initialize the robot and objects
         self.Franka = world.scene.get_object("Franka")
-        print(f"Franka after reset: {self.Franka}")
+        self.print_and_send(f"Franka after reset: {self.Franka}")
         if self.Franka is None:
-            print("Franka robot not found in the scene after reset.")
+            self.print_and_send("Franka robot not found in the scene after reset.")
         self.mycamera = world.scene.get_object("camera")
 
         # Re-initialize the controller manager
@@ -180,7 +191,7 @@ class Chemistry3DMAS(BaseSample):
 
         # Perform simulation updates
         self.Sim_Beaker_Kmno4.sim_update(self.Sim_Bottle_Kmno4, self.Franka, self.controller_manager)
-        self.Sim_Beaker_Kmno4.sim_update(self.Sim_Beaker_Fecl2, self.Franka, self.controller_manager) # Added
+        self.Sim_Beaker_Kmno4.sim_update(self.Sim_Beaker_Fecl2, self.Franka, self.controller_manager)  # Added
         self.Sim_Beaker_Fecl2.sim_update(self.Sim_Bottle_Fecl2, self.Franka, self.controller_manager)
         self.Sim_Beaker_Fecl2.sim_update(self.Sim_Beaker_Kmno4, self.Franka, self.controller_manager)
 
@@ -219,17 +230,17 @@ class Chemistry3DMAS(BaseSample):
         # Define event handlers
         @self.sio.event
         def connect():
-            print('WebSocket client connected to the server')
+            self.print_and_send('WebSocket client connected to the server')
             self.websocket_connected = True
 
         @self.sio.event
         def disconnect():
-            print('WebSocket client disconnected from the server')
+            self.print_and_send('WebSocket client disconnected from the server')
             self.websocket_connected = False
 
         @self.sio.event
         def tool_call(data):
-            print('Received tool_call from server:', data)
+            self.print_and_send('Received tool_call from server')
             self.tool_calls_queue.append(data)
 
         # Connect to the WebSocket server
@@ -237,7 +248,7 @@ class Chemistry3DMAS(BaseSample):
             self.sio.connect('http://localhost:8080')  # Replace with your server's address and port
             self.sio.wait()
         except Exception as e:
-            print('Failed to connect to WebSocket server:', e)
+            self.print_and_send(f'Failed to connect to WebSocket server: {e}')
 
     def sim_step(self, step_size):
         world = self.get_world()
@@ -248,19 +259,18 @@ class Chemistry3DMAS(BaseSample):
             current_observations = world.get_observations()
 
             if self.user_prompt and not self.controllers_ready:
-                print(f"Current Observations: {current_observations}")
-                print('Waiting for tool_calls from WebSocket server...')
+                self.print_and_send(f"Current Observations: {current_observations}")
+                self.print_and_send('Waiting for tool_calls from WebSocket server...')
 
                 # Send user prompt and observations to the server
                 if self.websocket_connected:
-                    # message = {
-                    #     'user_prompt': self.user_prompt,
-                    #     'current_observations': str(current_observations)
-                    # }
+                    message = {
+                        'user_prompt': self.user_prompt,
+                        'current_observations': current_observations
+                    }
                     # self.sio.emit('user_input', message)
-                    self.sio.emit('chat message', f"Current Observations: {current_observations}")
                 else:
-                    print('WebSocket is not connected. Cannot send user input.')
+                    self.print_and_send('WebSocket is not connected. Cannot send user input.')
 
                 # Wait for tool_calls to be received
                 if self.tool_calls_queue:
@@ -268,7 +278,7 @@ class Chemistry3DMAS(BaseSample):
                     try:
                         # Iterate through tool calls to handle each function call
                         for k, tool_call in enumerate(assistant_response['tool_calls']):
-                            print(f"Step {k+1}.")
+                            self.print_and_send(f"Step {k+1}.")
                             # Handle the function call
                             result = self.mas.agent_assistant.handle_function_call(
                                 tool_call=tool_call,
@@ -277,13 +287,13 @@ class Chemistry3DMAS(BaseSample):
                                 current_observations=current_observations,
                                 robot=self.Franka
                             )
-                            print(f"Function call result: {result}")
+                            self.print_and_send(f"Function call result: {result}")
                         self.controllers_ready = True
-                        print('Controllers executing...')
+                        self.print_and_send('Controllers executing...')
                     except Exception as e:
-                        print(f"Error processing tool_calls: {e}")
+                        self.print_and_send(f"Error processing tool_calls: {e}")
                 else:
-                    print('No tool_calls received yet.')
+                    self.print_and_send('No tool_calls received yet.')
 
             if self.controllers_ready:
                 # Execute the controller manager
