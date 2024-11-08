@@ -16,6 +16,7 @@ from pxr import Sdf, UsdPhysics, PhysxSchema
 # Import necessary libraries for WebSocket client
 import socketio
 import asyncio
+import numpy as np
 import copy  # For deep copying observations
 
 # Get the current directory
@@ -250,10 +251,28 @@ class Chemistry3DMAS(BaseSample):
 
         # Connect to the WebSocket server
         try:
-            self.sio.connect('http://your-server-address:your-port')  # Replace with your server's address and port
+            self.sio.connect('http://localhost:8080')  # Replace with your server's address and port
             self.sio.wait()
         except Exception as e:
             self.print_and_send(f'Failed to connect to WebSocket server: {e}')
+
+    def observations_changed(self, obs1, obs2):
+        # Check if observations have changed
+        if obs1.keys() != obs2.keys():
+            return True
+        for key in obs1:
+            val1 = obs1[key]
+            val2 = obs2[key]
+            if isinstance(val1, dict) and isinstance(val2, dict):
+                if self.observations_changed(val1, val2):
+                    return True
+            elif isinstance(val1, np.ndarray) and isinstance(val2, np.ndarray):
+                if not np.array_equal(val1, val2):
+                    return True
+            else:
+                if val1 != val2:
+                    return True
+        return False
 
     def sim_step(self, step_size):
         world = self.get_world()
@@ -264,7 +283,7 @@ class Chemistry3DMAS(BaseSample):
             current_observations = world.get_observations()
 
             # Check if observations have changed
-            if self.previous_observations != current_observations:
+            if self.previous_observations is None or self.observations_changed(self.previous_observations, current_observations):
                 self.print_and_send(f"Current Observations: {current_observations}")
                 self.previous_observations = copy.deepcopy(current_observations)
 
@@ -277,7 +296,7 @@ class Chemistry3DMAS(BaseSample):
                         'user_prompt': self.user_prompt,
                         'current_observations': current_observations
                     }
-                    self.sio.emit('user_input', message)
+                    # self.sio.emit('user_input', message)
                 else:
                     self.print_and_send('WebSocket is not connected. Cannot send user input.')
 
