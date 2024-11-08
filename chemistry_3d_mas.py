@@ -66,7 +66,8 @@ class Chemistry3DMAS(BaseSample):
         # Send to WebSocket server if connected
         if self.websocket_connected:
             try:
-                self.sio.emit('log_message', {'message': message})
+                self.sio.emit('chat message', str(message))
+                # self.sio.emit('log_message', {'message': message})
             except Exception as e:
                 print(f'Error sending message to WebSocket server: {e}')
 
@@ -288,7 +289,7 @@ class Chemistry3DMAS(BaseSample):
                 self.previous_observations = copy.deepcopy(current_observations)
 
             if self.user_prompt and not self.controllers_ready:
-                self.print_and_send('Waiting for tool_calls from WebSocket server...')
+                # self.print_and_send('Waiting for tool_calls from WebSocket server...')
 
                 # Send user prompt and observations to the server
                 if self.websocket_connected:
@@ -320,8 +321,8 @@ class Chemistry3DMAS(BaseSample):
                         self.print_and_send('Controllers executing...')
                     except Exception as e:
                         self.print_and_send(f"Error processing tool_calls: {e}")
-                else:
-                    self.print_and_send('No tool_calls received yet.')
+                # else:
+                #     self.print_and_send('No tool_calls received yet.')
 
             if self.controllers_ready:
                 # Execute the controller manager
