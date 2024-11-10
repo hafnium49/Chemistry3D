@@ -69,7 +69,6 @@ class Chemistry3DMAS(BaseSample):
         if self.websocket_connected:
             try:
                 self.sio.emit('chat message', str(message))
-                # self.sio.emit('log_message', {'message': message})
             except Exception as e:
                 print(f'Error sending message to WebSocket server: {e}')
 
@@ -241,30 +240,29 @@ class Chemistry3DMAS(BaseSample):
         # Define event handlers
         @self.sio.event
         def connect():
-            self.print_and_send('WebSocket client connected to the server')
+            self.print_and_send('WebSocket client connected to the relay server')
             self.websocket_connected = True
 
         @self.sio.event
         def disconnect():
-            self.print_and_send('WebSocket client disconnected from the server')
+            self.print_and_send('WebSocket client disconnected from the relay server')
             self.websocket_connected = False
 
-        @self.sio.event
-        def tool_call(data):
-            self.print_and_send('Received tool_call from server')
+        @self.sio.on('function_call')
+        def on_function_call(data):
+            self.print_and_send('Received function_call from relay server')
             self.tool_calls_queue.append(data)
 
-        @self.sio.on('server message')
-        def on_server_message(data):
-            print(f"Server message received: {data}")
-            # self.print_and_send(f"Server message received: {data}")
+        # Handle logs from the relay server
+        @self.sio.on('log')
+        def on_log(data):
+            self.print_and_send(f"Relay server log: {data}")
 
-        # Connect to the WebSocket server
+        # Connect to the relay server
         try:
-            self.sio.connect('http://localhost:8080')  # Replace with your server's address and port
-            self.sio.wait()
+            self.sio.connect('http://localhost:8081')  # Replace with your relay server's address and port
         except Exception as e:
-            self.print_and_send(f'Failed to connect to WebSocket server: {e}')
+            self.print_and_send(f'Failed to connect to relay server: {e}')
 
     def observations_changed(self, obs1, obs2):
         # Check if observations have changed
@@ -300,40 +298,38 @@ class Chemistry3DMAS(BaseSample):
                 self.last_observation_time = current_time
 
             if self.user_prompt and not self.controllers_ready:
-                # self.print_and_send('Waiting for tool_calls from WebSocket server...')
-
-                # Send user prompt and observations to the server
+                # Send user prompt to the relay server
                 if self.websocket_connected:
-                    message = {
-                        'user_prompt': self.user_prompt,
-                        'current_observations': current_observations
-                    }
-                    # self.sio.emit('user_input', message)
+                    self.print_and_send(f'Sending user prompt to relay server: {self.user_prompt}')
+                    self.sio.emit('message', self.user_prompt)
+                    self.user_prompt = None  # Reset user prompt after sending
                 else:
                     self.print_and_send('WebSocket is not connected. Cannot send user input.')
 
-                # Wait for tool_calls to be received
-                if self.tool_calls_queue:
-                    assistant_response = self.tool_calls_queue.pop(0)
-                    try:
-                        # Iterate through tool calls to handle each function call
-                        for k, tool_call in enumerate(assistant_response['tool_calls']):
-                            self.print_and_send(f"Step {k+1}.")
-                            # Handle the function call
-                            result = self.mas.agent_assistant.handle_function_call(
-                                tool_call=tool_call,
-                                global_dict=globals(),
-                                controller_manager=self.controller_manager,
-                                current_observations=current_observations,
-                                robot=self.Franka
-                            )
-                            # self.print_and_send(f"Function call result: {result}")
-                        self.controllers_ready = True
-                        self.print_and_send('Controllers executing...')
-                    except Exception as e:
-                        self.print_and_send(f"Error processing tool_calls: {e}")
-                # else:
-                #     self.print_and_send('No tool_calls received yet.')
+            # Check if there are any function calls received
+            if self.tool_calls_queue:
+                function_call = self.tool_calls_queue.pop(0)
+                try:
+                    self.print_and_send(f"Processing function call: {function_call}")
+                    # Handle the function call
+                    result = self.mas.agent_assistant.handle_function_call(
+                        tool_call=function_call,
+                        global_dict=globals(),
+                        controller_manager=self.controller_manager,
+                        current_observations=current_observations,
+                        robot=self.Franka
+                    )
+                    self.print_and_send(f"Function call result: {result}")
+                    # Send function call output back to the relay server
+                    output_data = {
+                        'call_id': function_call.get('id', ''),
+                        'output': result
+                    }
+                    self.sio.emit('function_call_output', output_data)
+                    self.controllers_ready = True
+                    self.print_and_send('Controllers executing...')
+                except Exception as e:
+                    self.print_and_send(f"Error processing function_call: {e}")
 
             if self.controllers_ready:
                 # Execute the controller manager
