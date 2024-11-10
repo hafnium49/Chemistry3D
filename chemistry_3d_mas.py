@@ -256,7 +256,8 @@ class Chemistry3DMAS(BaseSample):
 
         @self.sio.on('server message')
         def on_server_message(data):
-            self.print_and_send(f"Server message received: {data}")
+            print(f"Server message received: {data}")
+            # self.print_and_send(f"Server message received: {data}")
 
         # Connect to the WebSocket server
         try:
