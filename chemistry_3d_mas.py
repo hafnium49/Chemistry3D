@@ -68,7 +68,7 @@ class Chemistry3DMAS(BaseSample):
         # Send to WebSocket server if connected
         if self.websocket_connected:
             try:
-                self.sio.emit('chat message', str(message))
+                self.sio.emit('message', str(message))
             except Exception as e:
                 print(f'Error sending message to WebSocket server: {e}')
 
@@ -301,7 +301,7 @@ class Chemistry3DMAS(BaseSample):
                 # Send user prompt to the relay server
                 if self.websocket_connected:
                     self.print_and_send(f'Sending user prompt to relay server: {self.user_prompt}')
-                    self.sio.emit('message', self.user_prompt)
+                    # self.sio.emit('message', self.user_prompt)
                     self.user_prompt = None  # Reset user prompt after sending
                 else:
                     self.print_and_send('WebSocket is not connected. Cannot send user input.')
