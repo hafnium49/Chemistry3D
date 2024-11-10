@@ -240,29 +240,29 @@ class Chemistry3DMAS(BaseSample):
         # Define event handlers
         @self.sio.event
         def connect():
-            self.print_and_send('WebSocket client connected to the relay server')
+            self.print('WebSocket client connected to the relay server')
             self.websocket_connected = True
 
         @self.sio.event
         def disconnect():
-            self.print_and_send('WebSocket client disconnected from the relay server')
+            self.print('WebSocket client disconnected from the relay server')
             self.websocket_connected = False
 
         @self.sio.on('function_call')
         def on_function_call(data):
-            self.print_and_send('Received function_call from relay server')
+            self.print('Received function_call from relay server')
             self.tool_calls_queue.append(data)
 
         # Handle logs from the relay server
         @self.sio.on('log')
         def on_log(data):
-            self.print_and_send(f"Relay server log: {data}")
+            self.print(f"Relay server log: {data}")
 
         # Connect to the relay server
         try:
             self.sio.connect('http://localhost:8081')  # Replace with your relay server's address and port
         except Exception as e:
-            self.print_and_send(f'Failed to connect to relay server: {e}')
+            self.print(f'Failed to connect to relay server: {e}')
 
     def observations_changed(self, obs1, obs2):
         # Check if observations have changed
