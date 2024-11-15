@@ -48,8 +48,8 @@ class Chemistry3DMAS(BaseSample):
         self.Sim_Beaker_Kmno4 = None
         self.Sim_Beaker_Fecl2 = None
 
-        # Initialize WebSocket client
-        self.sio = socketio.Client()
+        # Initialize WebSocket client with logging
+        self.sio = socketio.Client(logger=True, engineio_logger=True)
         self.tool_calls_queue = []
         self.websocket_connected = False
 
@@ -250,7 +250,7 @@ class Chemistry3DMAS(BaseSample):
 
         @self.sio.on('function_call')
         def on_function_call(data):
-            print('Received function_call from relay server')
+            print(f'Received function_call from relay server: {data}')
             self.tool_calls_queue.append(data)
 
         # Handle logs from the relay server
@@ -260,7 +260,7 @@ class Chemistry3DMAS(BaseSample):
 
         # Connect to the relay server
         try:
-            self.sio.connect('http://localhost:8081')  # Replace with your relay server's address and port
+            self.sio.connect('http://localhost:8081', transports=['websocket'], wait=True)
         except Exception as e:
             print(f'Failed to connect to relay server: {e}')
 
