@@ -315,7 +315,7 @@ class Chemistry3DMAS(BaseSample):
                         'type': 'message',
                         'text': self.user_prompt
                     })
-                    self.ws.send(message)
+                    # self.ws.send(message)
                     self.user_prompt = None  # Reset user prompt after sending
                 else:
                     self.print_and_send('WebSocket is not connected. Cannot send user input.')
