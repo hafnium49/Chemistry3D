@@ -14,7 +14,8 @@ from omni.isaac.examples.user_examples.Sim_Container import Sim_Container
 from pxr import Sdf, UsdPhysics, PhysxSchema
 
 # Import necessary libraries
-import socketio
+import websocket
+import json
 import asyncio
 import numpy as np
 import copy  # For deep copying observations
@@ -49,13 +50,8 @@ class Chemistry3DMAS(BaseSample):
         self.Sim_Beaker_Fecl2 = None
 
         # Initialize WebSocket client with logging
-        self.sio = socketio.Client(logger=True, engineio_logger=True)
         self.tool_calls_queue = []
         self.websocket_connected = False
-
-        # Initialize previous observations and timing
-        self.previous_observations = None
-        self.last_observation_time = None  # For limiting print rate
 
         # Start WebSocket client in a separate thread
         self.websocket_thread = threading.Thread(target=self.start_websocket_client)
@@ -68,7 +64,7 @@ class Chemistry3DMAS(BaseSample):
         # Send to WebSocket server if connected
         if self.websocket_connected:
             try:
-                self.sio.emit('message', str(message))
+                self.ws.send(json.dumps({'type': 'message', 'text': str(message)}))
             except Exception as e:
                 print(f'Error sending message to WebSocket server: {e}')
 
@@ -237,32 +233,62 @@ class Chemistry3DMAS(BaseSample):
             self.user_prompt = input("Enter your task: ")
 
     def start_websocket_client(self):
-        # Define event handlers
-        @self.sio.event
-        def connect():
+        def on_open(ws):
             print('WebSocket client connected to the relay server')
             self.websocket_connected = True
 
-        @self.sio.event
-        def disconnect():
+        def on_message(ws, message):
+            print(f'Received message from relay server: {message}')
+            data = json.loads(message)
+            if data.get('type') == 'function_call':
+                self.tool_calls_queue.append(data)
+            elif data.get('type') == 'log':
+                print(f"Relay server log: {data}")
+
+        def on_error(ws, error):
+            print(f'WebSocket error: {error}')
+
+        def on_close(ws, close_status_code, close_msg):
             print('WebSocket client disconnected from the relay server')
             self.websocket_connected = False
 
-        @self.sio.on('function_call')
-        def on_function_call(data):
-            print(f'Received function_call from relay server: {data}')
-            self.tool_calls_queue.append(data)
+        websocket.enableTrace(True)
+        ws_url = 'ws://localhost:8080/chemistry3d'  # Ensure the URL matches the relay server
+        self.ws = websocket.WebSocketApp(
+            ws_url,
+            on_open=on_open,
+            on_message=on_message,
+            on_error=on_error,
+            on_close=on_close
+        )
 
-        # Handle logs from the relay server
-        @self.sio.on('log')
-        def on_log(data):
-            print(f"Relay server log: {data}")
+        # Start the WebSocket client in a new thread
+        self.ws_thread = threading.Thread(target=self.ws.run_forever)
+        self.ws_thread.daemon = True
+        self.ws_thread.start()
 
-        # Connect to the relay server
-        try:
-            self.sio.connect('http://localhost:8081', transports=['websocket'], wait=True)
-        except Exception as e:
-            print(f'Failed to connect to relay server: {e}')
+    def send_user_prompt(self):
+        if self.websocket_connected and self.user_prompt:
+            message = json.dumps({
+                'type': 'user_message',
+                'text': self.user_prompt
+            })
+            self.ws.send(message)
+            self.print_and_send(f'Sent user prompt to relay server: {self.user_prompt}')
+            self.user_prompt = None
+        else:
+            self.print_and_send('WebSocket is not connected. Cannot send user input.')
+
+    def send_function_call_output(self, output_data):
+        if self.websocket_connected:
+            message = json.dumps({
+                'type': 'function_call_output',
+                'call_id': output_data['call_id'],
+                'output': output_data['output']
+            })
+            self.ws.send(message)
+        else:
+            self.print_and_send('WebSocket is not connected. Cannot send function call output.')
 
     def observations_changed(self, obs1, obs2):
         # Check if observations have changed
@@ -298,13 +324,7 @@ class Chemistry3DMAS(BaseSample):
                 self.last_observation_time = current_time
 
             if self.user_prompt and not self.controllers_ready:
-                # Send user prompt to the relay server
-                if self.websocket_connected:
-                    self.print_and_send(f'Sending user prompt to relay server: {self.user_prompt}')
-                    # self.sio.emit('message', self.user_prompt)
-                    self.user_prompt = None  # Reset user prompt after sending
-                else:
-                    self.print_and_send('WebSocket is not connected. Cannot send user input.')
+                self.send_user_prompt()
 
             # Check if there are any function calls received
             if self.tool_calls_queue:
@@ -322,10 +342,10 @@ class Chemistry3DMAS(BaseSample):
                     self.print_and_send(f"Function call result: {result}")
                     # Send function call output back to the relay server
                     output_data = {
-                        'call_id': function_call.get('id', ''),
+                        'call_id': function_call.get('call_id', ''),
                         'output': result
                     }
-                    self.sio.emit('function_call_output', output_data)
+                    self.send_function_call_output(output_data)
                     self.controllers_ready = True
                     self.print_and_send('Controllers executing...')
                 except Exception as e:
