@@ -36,10 +36,10 @@ class Chemistry3DMAS(BaseSample):
         self.controller_manager = None
         self.Franka = None
         self.mas = None
-        self.user_prompt = None
+        # self.user_prompt = None
         self.controllers_ready = False
         self.utils = None
-        self.input_thread = None
+        # self.input_thread = None
         self.mycamera = None
 
         # Simulation containers
@@ -62,13 +62,36 @@ class Chemistry3DMAS(BaseSample):
         self.websocket_thread.daemon = True
         self.websocket_thread.start()
 
+    # def print_and_send(self, message):
+    #     # Print to terminal
+    #     print(message)
+    #     # Send to WebSocket server if connected
+    #     if self.websocket_connected:
+    #         try:
+    #             self.ws.send(json.dumps({'type': 'log', 'message': str(message)}))
+    #         except Exception as e:
+    #             print(f'Error sending message to WebSocket server: {e}')
+
     def print_and_send(self, message):
         # Print to terminal
         print(message)
         # Send to WebSocket server if connected
         if self.websocket_connected:
             try:
-                self.ws.send(json.dumps({'type': 'log', 'message': str(message)}))
+                # self.ws.send(json.dumps({
+                #     'type': 'conversation.item.create',
+                #     'item': {
+                #         'type': 'message',
+                #         'role': 'user',
+                #         'text': str(message)
+                #     }
+                # }))
+                self.ws.send(json.dumps({
+                    'type': 'message',
+                    'role': 'user',
+                    'text': str(message)
+                }))
+
             except Exception as e:
                 print(f'Error sending message to WebSocket server: {e}')
 
@@ -140,11 +163,11 @@ class Chemistry3DMAS(BaseSample):
         self.Sim_Beaker_Fecl2.sim_update(self.Sim_Beaker_Kmno4, self.Franka, self.controller_manager)
 
         # Start user input thread
-        self.user_prompt = None
+        # self.user_prompt = None
         self.controllers_ready = False
-        self.input_thread = threading.Thread(target=self.get_user_input)
-        self.input_thread.daemon = True
-        self.input_thread.start()
+        # self.input_thread = threading.Thread(target=self.get_user_input)
+        # self.input_thread.daemon = True
+        # self.input_thread.start()
 
         # Register physics callback
         world.add_physics_callback("sim_step", self.sim_step)
@@ -202,15 +225,15 @@ class Chemistry3DMAS(BaseSample):
         self.Sim_Beaker_Fecl2.sim_update(self.Sim_Beaker_Kmno4, self.Franka, self.controller_manager)
 
         # Re-initialize variables
-        self.user_prompt = None
+        # self.user_prompt = None
         self.controllers_ready = False
         self.previous_observations = None  # Reset previous observations
         self.last_observation_time = None  # Reset last observation time
 
         # Start user input thread again
-        self.input_thread = threading.Thread(target=self.get_user_input)
-        self.input_thread.daemon = True
-        self.input_thread.start()
+        # self.input_thread = threading.Thread(target=self.get_user_input)
+        # self.input_thread.daemon = True
+        # self.input_thread.start()
 
         # Register physics callback again
         world.add_physics_callback("sim_step", self.sim_step)
@@ -220,10 +243,10 @@ class Chemistry3DMAS(BaseSample):
         self.controller_manager = None
         self.Franka = None
         self.mas = None
-        self.user_prompt = None
+        # self.user_prompt = None
         self.controllers_ready = False
         self.utils = None
-        self.input_thread = None
+        # self.input_thread = None
         self.mycamera = None
         self.Sim_Bottle_Kmno4 = None
         self.Sim_Bottle_Fecl2 = None
@@ -232,9 +255,9 @@ class Chemistry3DMAS(BaseSample):
         self.previous_observations = None
         self.last_observation_time = None
 
-    def get_user_input(self):
-        while True:
-            self.user_prompt = input("Enter your task: ")
+    # def get_user_input(self):
+    #     while True:
+    #         self.user_prompt = input("Enter your task: ")
 
     def start_websocket_client(self):
         # Define event handlers
@@ -307,18 +330,18 @@ class Chemistry3DMAS(BaseSample):
                 self.previous_observations = copy.deepcopy(current_observations)
                 self.last_observation_time = current_time
 
-            if self.user_prompt and not self.controllers_ready:
-                # Send user prompt to the relay server
-                if self.websocket_connected:
-                    self.print_and_send(f'Sending user prompt to relay server: {self.user_prompt}')
-                    message = json.dumps({
-                        'type': 'message',
-                        'text': self.user_prompt
-                    })
-                    # self.ws.send(message)
-                    self.user_prompt = None  # Reset user prompt after sending
-                else:
-                    self.print_and_send('WebSocket is not connected. Cannot send user input.')
+            # if self.user_prompt and not self.controllers_ready:
+            #     # Send user prompt to the relay server
+            #     if self.websocket_connected:
+            #         self.print_and_send(f'Sending user prompt to relay server: {self.user_prompt}')
+            #         message = json.dumps({
+            #             'type': 'message',
+            #             'text': self.user_prompt
+            #         })
+            #         # self.ws.send(message)
+            #         self.user_prompt = None  # Reset user prompt after sending
+            #     else:
+            #         self.print_and_send('WebSocket is not connected. Cannot send user input.')
 
             # Check if there are any function calls received
             if self.tool_calls_queue:
@@ -352,7 +375,7 @@ class Chemistry3DMAS(BaseSample):
                 if self.controller_manager.is_done():
                     world.pause()
                     self.controllers_ready = False  # Reset for next user prompt
-                    self.user_prompt = None
+                    # self.user_prompt = None
 
     async def on_start_simulation_async(self):
         world = self.get_world()

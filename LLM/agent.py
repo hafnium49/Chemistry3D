@@ -141,8 +141,10 @@ class AgentLLM:
         return None
 
     def handle_function_call(self, tool_call, global_dict, controller_manager, current_observations, robot):
-        function_name = tool_call.function.name
-        arguments_str = tool_call.function.arguments
+        print(f"Handling function call: {tool_call}")
+        print(f"Tool call type: {type(tool_call)}")
+        function_name = tool_call["function"]["name"] #tool_call.function.name
+        arguments_str = tool_call["function"]["arguments"] #tool_call.function.arguments
         try:
             arguments = json.loads(arguments_str)
         except json.JSONDecodeError as e:
