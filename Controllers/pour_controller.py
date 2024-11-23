@@ -46,7 +46,7 @@ class PourController(BaseController):
         Sim_Container2: Sim_Container = None,
         pour_volume: int = None,
         events_dt: typing.Optional[typing.List[float]] = None,
-        speed: float = 4.0 #1.0
+        speed: float = 16.0 #1.0
     ) -> None:
         BaseController.__init__(self, name=name)
         self.Sim_Container1 = Sim_Container1

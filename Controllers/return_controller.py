@@ -40,7 +40,7 @@ class PlaceController(BaseController):
         gripper: Gripper,
         end_effector_initial_height: typing.Optional[float] = None,
         events_dt: typing.Optional[typing.List[float]] = None,
-        speed: float = 4.0 #1.0
+        speed: float = 16.0 #1.0
     ) -> None:
         super().__init__(name=name)
         self._event = 0
