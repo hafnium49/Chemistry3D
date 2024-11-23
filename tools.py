@@ -38,6 +38,7 @@ def add_pickmove_task(controller_manager, picking_object, target, current_observ
         "end_effector_offset": end_effector_offset,
         "end_effector_orientation": end_effector_orientation
     }
+    print(f"param_template: {param_template}")
     # Store the target_position for use in add_return_task
     controller_manager.last_pickmove_target_position = target_position
     controller_manager.add_task('pickmove_controller', param_template)
@@ -67,6 +68,7 @@ def add_pour_task(controller_manager, picked_object, current_observations=None, 
         "current_joint_velocities": np.array(current_joint_velocities),
         "pour_speed": pour_speed
     }
+    print(f"param_template: {param_template}")
     controller_manager.add_task('pour_controller', param_template)
     return "Pour task added successfully."
 
@@ -104,6 +106,7 @@ def add_return_task(controller_manager, pour_position, return_position, current_
         "end_effector_offset": end_effector_offset,
         "end_effector_orientation": end_effector_orientation
     }
+    print(f"param_template: {param_template}")
     controller_manager.add_task('return_controller', param_template)
     return "Return task added successfully."
 
