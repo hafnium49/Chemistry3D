@@ -136,7 +136,6 @@ class Chemistry3DMAS(BaseSample):
         else:
             # Initialize the robot's articulation
             self.Franka.initialize()
-            self.Franka.reset_buffers()
             self.print_and_send("Franka robot initialized.")
 
         self.mycamera = world.scene.get_object("camera")
@@ -207,7 +206,6 @@ class Chemistry3DMAS(BaseSample):
         else:
             # Initialize the robot's articulation
             self.Franka.initialize()
-            self.Franka.reset_buffers()
             self.print_and_send("Franka robot initialized after reset.")
 
         self.mycamera = world.scene.get_object("camera")
