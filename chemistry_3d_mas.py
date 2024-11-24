@@ -293,8 +293,9 @@ class Chemistry3DMAS(BaseSample):
         if world.is_playing():
             # Check if the robot's physics handles are initialized
             if not self.Franka.handles_initialized:
-                self.initialize_simulation_objects(world, reset=True)
-                print('Simulation objects re-initialized after reset.')
+                # self.initialize_simulation_objects(world)
+                self.Franka.initialize()
+                self.print_and_send('Simulation objects re-initialized after reset.')
                 return
 
             current_observations = world.get_observations()
