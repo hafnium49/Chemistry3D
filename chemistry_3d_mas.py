@@ -193,7 +193,11 @@ class Chemistry3DMAS(BaseSample):
         await world.reset_async()
         # Wait for physics steps to ensure the physics simulation view is created
         for _ in range(5):
-            await world.step_async()
+            try:
+                await world.step_async()
+            except Exception as e:
+                print(f'Error stepping physics: {e}')
+                break
         # Wait for the stage to load
         await omni.kit.app.get_app().next_update_async()
         self.initialize_simulation_objects(world, reset=True)
