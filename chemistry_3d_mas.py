@@ -135,15 +135,15 @@ class Chemistry3DMAS(BaseSample):
             self.print_and_send("Franka robot not found in the scene.")
         else:
             # Initialize the robot's articulation
-            await self.Franka.initialize()
-            await self.Franka.reset_buffers()
+            self.Franka.initialize()
+            self.Franka.reset_buffers()
             self.print_and_send("Franka robot initialized.")
 
         self.mycamera = world.scene.get_object("camera")
 
         # Initialize the controller manager
         self.controller_manager = ControllerManager(world, self.Franka, self.Franka.gripper)
-        await self.controller_manager.initialize()
+        self.controller_manager.initialize()
 
         # Initialize simulation containers with specific properties
         self.Sim_Bottle_Kmno4 = Sim_Container(
@@ -206,15 +206,15 @@ class Chemistry3DMAS(BaseSample):
             self.print_and_send("Franka robot not found in the scene after reset.")
         else:
             # Initialize the robot's articulation
-            await self.Franka.initialize()
-            await self.Franka.reset_buffers()
+            self.Franka.initialize()
+            self.Franka.reset_buffers()
             self.print_and_send("Franka robot initialized after reset.")
 
         self.mycamera = world.scene.get_object("camera")
 
         # Re-initialize the controller manager after the robot is initialized
         self.controller_manager = ControllerManager(world, self.Franka, self.Franka.gripper)
-        await self.controller_manager.initialize()
+        self.controller_manager.initialize()
 
         # Re-initialize simulation containers with specific properties
         self.Sim_Bottle_Kmno4 = Sim_Container(
