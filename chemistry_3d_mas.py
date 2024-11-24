@@ -291,72 +291,68 @@ class Chemistry3DMAS(BaseSample):
     def sim_step(self, step_size):
         world = self.get_world()
         if world.is_playing():
-            try:
-                current_observations = world.get_observations()
-                current_time = time.time()
-
-                # Check if observations have changed and limit print rate to 1 Hz
-                if (self.previous_observations is None) and (self.last_observation_time is None or (current_time - self.last_observation_time) >= 1.0):
-                # if (self.previous_observations is None or self.observations_changed(self.previous_observations, current_observations)) and (self.last_observation_time is None or (current_time - self.last_observation_time) >= 1.0):
-                    self.print_and_send(f"Current Observations: {current_observations}")
-                    self.previous_observations = copy.deepcopy(current_observations)
-                    self.last_observation_time = current_time
-
-                # if self.user_prompt and not self.controllers_ready:
-                #     # Send user prompt to the relay server
-                #     if self.websocket_connected:
-                #         self.print_and_send(f'Sending user prompt to relay server: {self.user_prompt}')
-                #         message = json.dumps({
-                #             'type': 'message',
-                #             'text': self.user_prompt
-                #         })
-                #         # self.ws.send(message)
-                #         self.user_prompt = None  # Reset user prompt after sending
-                #     else:
-                #         self.print_and_send('WebSocket is not connected. Cannot send user input.')
-
-                # Check if there are any function calls received
-                if self.tool_calls_queue:
-                    function_call = self.tool_calls_queue.pop(0)
-                    try:
-                        self.print_and_send(f"Processing function call: {function_call}")
-                        # Handle the function call
-                        result = self.mas.agent_assistant.handle_function_call(
-                            tool_call=function_call,
-                            global_dict=globals(),
-                            controller_manager=self.controller_manager,
-                            current_observations=current_observations,
-                            robot=self.Franka
-                        )
-                        self.print_and_send(f"Function call result: {result}")
-                        # Send function call output back to the relay server
-                        output_data = {
-                            'type': 'function_call_output',
-                            'call_id': function_call.get('id', ''),
-                            'output': result
-                        }
-                        self.ws.send(json.dumps(output_data))
-                        self.controllers_ready = True
-                        self.print_and_send('Controllers executing...')
-                    except Exception as e:
-                        self.print_and_send(f"Error processing function_call: {e}")
-
-                if self.controllers_ready:
-                    # Execute the controller manager
-                    self.controller_manager.execute(current_observations=current_observations)
-                    if self.controller_manager.is_done():
-                        world.pause()
-                        self.controllers_ready = False  # Reset for next user prompt
-                        # self.user_prompt = None
-            except Exception as e:
-                print(f'Error in sim_step: {e}')
+            # Check if the robot's physics handles are initialized
+            if not self.Franka.handles_initialized:
                 self.initialize_simulation_objects(world, reset=True)
-                # Check if the robot's physics handles are initialized
-                # if not self.Franka.handles_initialized:
-                #     # Skip this step until the simulation view is ready
-                #     print('Skipping sim_step until the simulation view is ready')
+                print('Simulation objects re-initialized after reset.')
                 return
 
+            current_observations = world.get_observations()
+            current_time = time.time()
+
+            # Check if observations have changed and limit print rate to 1 Hz
+            if (self.previous_observations is None) and (self.last_observation_time is None or (current_time - self.last_observation_time) >= 1.0):
+            # if (self.previous_observations is None or self.observations_changed(self.previous_observations, current_observations)) and (self.last_observation_time is None or (current_time - self.last_observation_time) >= 1.0):
+                self.print_and_send(f"Current Observations: {current_observations}")
+                self.previous_observations = copy.deepcopy(current_observations)
+                self.last_observation_time = current_time
+
+            # if self.user_prompt and not self.controllers_ready:
+            #     # Send user prompt to the relay server
+            #     if self.websocket_connected:
+            #         self.print_and_send(f'Sending user prompt to relay server: {self.user_prompt}')
+            #         message = json.dumps({
+            #             'type': 'message',
+            #             'text': self.user_prompt
+            #         })
+            #         # self.ws.send(message)
+            #         self.user_prompt = None  # Reset user prompt after sending
+            #     else:
+            #         self.print_and_send('WebSocket is not connected. Cannot send user input.')
+
+            # Check if there are any function calls received
+            if self.tool_calls_queue:
+                function_call = self.tool_calls_queue.pop(0)
+                try:
+                    self.print_and_send(f"Processing function call: {function_call}")
+                    # Handle the function call
+                    result = self.mas.agent_assistant.handle_function_call(
+                        tool_call=function_call,
+                        global_dict=globals(),
+                        controller_manager=self.controller_manager,
+                        current_observations=current_observations,
+                        robot=self.Franka
+                    )
+                    self.print_and_send(f"Function call result: {result}")
+                    # Send function call output back to the relay server
+                    output_data = {
+                        'type': 'function_call_output',
+                        'call_id': function_call.get('id', ''),
+                        'output': result
+                    }
+                    self.ws.send(json.dumps(output_data))
+                    self.controllers_ready = True
+                    self.print_and_send('Controllers executing...')
+                except Exception as e:
+                    self.print_and_send(f"Error processing function_call: {e}")
+
+            if self.controllers_ready:
+                # Execute the controller manager
+                self.controller_manager.execute(current_observations=current_observations)
+                if self.controller_manager.is_done():
+                    world.pause()
+                    self.controllers_ready = False  # Reset for next user prompt
+                    # self.user_prompt = None
 
     async def on_start_simulation_async(self):
         world = self.get_world()
