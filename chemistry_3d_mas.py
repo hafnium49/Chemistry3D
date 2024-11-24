@@ -123,26 +123,30 @@ class Chemistry3DMAS(BaseSample):
         task = Chem_Lab_Task_SL(name='Chem_Lab_Task_SL')
         world.add_task(task)
 
-    async def setup_post_load(self):
-        world = self.get_world()
-        # Wait for the stage to load
-        await omni.kit.app.get_app().next_update_async()
-
+    def initialize_simulation_objects(self, world, reset=False):
         # Get the robot and initialize it
         self.Franka = world.scene.get_object("Franka")
-        self.print_and_send(f"Franka: {self.Franka}")
+        if reset:
+            self.print_and_send(f"Franka after reset: {self.Franka}")
+        else:
+            self.print_and_send(f"Franka: {self.Franka}")
         if self.Franka is None:
-            self.print_and_send("Franka robot not found in the scene.")
+            if reset:
+                self.print_and_send("Franka robot not found in the scene after reset.")
+            else:
+                self.print_and_send("Franka robot not found in the scene.")
         else:
             # Initialize the robot's articulation
             self.Franka.initialize()
-            self.print_and_send("Franka robot initialized.")
+            if reset:
+                self.print_and_send("Franka robot initialized after reset.")
+            else:
+                self.print_and_send("Franka robot initialized.")
 
         self.mycamera = world.scene.get_object("camera")
 
         # Initialize the controller manager
         self.controller_manager = ControllerManager(world, self.Franka, self.Franka.gripper)
-        # self.controller_manager.initialize()
 
         # Initialize simulation containers with specific properties
         self.Sim_Bottle_Kmno4 = Sim_Container(
@@ -165,28 +169,23 @@ class Chemistry3DMAS(BaseSample):
 
         # Perform simulation updates
         self.Sim_Beaker_Kmno4.sim_update(self.Sim_Bottle_Kmno4, self.Franka, self.controller_manager)
-        self.Sim_Beaker_Kmno4.sim_update(self.Sim_Beaker_Fecl2, self.Franka, self.controller_manager)  # Added
+        self.Sim_Beaker_Kmno4.sim_update(self.Sim_Beaker_Fecl2, self.Franka, self.controller_manager)
         self.Sim_Beaker_Fecl2.sim_update(self.Sim_Bottle_Fecl2, self.Franka, self.controller_manager)
         self.Sim_Beaker_Fecl2.sim_update(self.Sim_Beaker_Kmno4, self.Franka, self.controller_manager)
 
-        # Start user input thread
-        # self.user_prompt = None
+        # Re-initialize variables
         self.controllers_ready = False
-        # self.input_thread = threading.Thread(target=self.get_user_input)
-        # self.input_thread.daemon = True
-        # self.input_thread.start()
+        self.previous_observations = None
+        self.last_observation_time = None
 
         # Register physics callback
         world.add_physics_callback("sim_step", self.sim_step)
 
-    async def setup_pre_reset(self):
+    async def setup_post_load(self):
         world = self.get_world()
-        # Remove physics callback
-        if world.physics_callback_exists("sim_step"):
-            world.remove_physics_callback("sim_step")
-        # Reset the controller manager
-        if self.controller_manager:
-            self.controller_manager.reset()
+        # Wait for the stage to load
+        await omni.kit.app.get_app().next_update_async()
+        self.initialize_simulation_objects(world)
 
     async def setup_post_reset(self):
         world = self.get_world()
@@ -197,55 +196,16 @@ class Chemistry3DMAS(BaseSample):
             await world.step_async()
         # Wait for the stage to load
         await omni.kit.app.get_app().next_update_async()
+        self.initialize_simulation_objects(world, reset=True)
 
-        # Re-initialize the robot and objects
-        self.Franka = world.scene.get_object("Franka")
-        self.print_and_send(f"Franka after reset: {self.Franka}")
-        if self.Franka is None:
-            self.print_and_send("Franka robot not found in the scene after reset.")
-        else:
-            # Initialize the robot's articulation
-            self.Franka.initialize()
-            self.print_and_send("Franka robot initialized after reset.")
-
-        self.mycamera = world.scene.get_object("camera")
-
-        # Re-initialize the controller manager after the robot is initialized
-        self.controller_manager = ControllerManager(world, self.Franka, self.Franka.gripper)
-        # self.controller_manager.initialize()
-
-        # Re-initialize simulation containers with specific properties
-        self.Sim_Bottle_Kmno4 = Sim_Container(
-            world=world,
-            sim_container=world.scene.get_object("Bottle_Kmno4"),
-            solute={'MnO4^-': 0.02, 'K^+': 0.02, 'H^+': 0.04, 'SO4^2-': 0.02},
-            volume=0.02
-        )
-        self.Sim_Bottle_Fecl2 = Sim_Container(
-            world=world,
-            sim_container=world.scene.get_object("Bottle_Fecl2"),
-            solute={'Fe^2+': 0.06, 'Cl^-': 0.12},
-            volume=0.02
-        )
-        self.Sim_Beaker_Kmno4 = Sim_Container(world=world, sim_container=world.scene.get_object("beaker_Kmno4"))
-        self.Sim_Beaker_Fecl2 = Sim_Container(world=world, sim_container=world.scene.get_object("beaker_Fecl2"))
-
-        # Re-initialize the MAS system
-        self.mas = MAS(world, self.controller_manager)
-
-        # Perform simulation updates
-        self.Sim_Beaker_Kmno4.sim_update(self.Sim_Bottle_Kmno4, self.Franka, self.controller_manager)
-        self.Sim_Beaker_Kmno4.sim_update(self.Sim_Beaker_Fecl2, self.Franka, self.controller_manager)  # Added
-        self.Sim_Beaker_Fecl2.sim_update(self.Sim_Bottle_Fecl2, self.Franka, self.controller_manager)
-        self.Sim_Beaker_Fecl2.sim_update(self.Sim_Beaker_Kmno4, self.Franka, self.controller_manager)
-
-        # Re-initialize variables
-        self.controllers_ready = False
-        self.previous_observations = None
-        self.last_observation_time = None
-
-        # Register physics callback again
-        world.add_physics_callback("sim_step", self.sim_step)
+    async def setup_pre_reset(self):
+        world = self.get_world()
+        # Remove physics callback
+        if world.physics_callback_exists("sim_step"):
+            world.remove_physics_callback("sim_step")
+        # Reset the controller manager
+        if self.controller_manager:
+            self.controller_manager.reset()
 
     async def setup_post_clear(self):
         # Clean up
