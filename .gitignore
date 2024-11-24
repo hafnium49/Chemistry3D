@@ -5,3 +5,4 @@
 *.env
 LLM/log/*
 LLM/Proposed_str/backup/*
+*_backup_*.py
