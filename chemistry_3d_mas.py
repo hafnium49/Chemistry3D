@@ -186,7 +186,9 @@ class Chemistry3DMAS(BaseSample):
         world = self.get_world()
         # Reset the world
         await world.reset_async()
-        await world.pause_async()
+        # Wait for physics steps to ensure the physics simulation view is created
+        for _ in range(5):
+            await world.step_async()
         # Wait for the stage to load
         await omni.kit.app.get_app().next_update_async()
 
@@ -195,10 +197,17 @@ class Chemistry3DMAS(BaseSample):
         self.print_and_send(f"Franka after reset: {self.Franka}")
         if self.Franka is None:
             self.print_and_send("Franka robot not found in the scene after reset.")
+        else:
+            # Initialize the robot's articulation
+            await self.Franka.initialize()
+            await self.Franka.reset_buffers()
+            self.print_and_send("Franka robot initialized after reset.")
+
         self.mycamera = world.scene.get_object("camera")
 
-        # Re-initialize the controller manager
+        # Re-initialize the controller manager after the robot is initialized
         self.controller_manager = ControllerManager(world, self.Franka, self.Franka.gripper)
+        await self.controller_manager.initialize()
 
         # Re-initialize simulation containers with specific properties
         self.Sim_Bottle_Kmno4 = Sim_Container(
@@ -226,15 +235,9 @@ class Chemistry3DMAS(BaseSample):
         self.Sim_Beaker_Fecl2.sim_update(self.Sim_Beaker_Kmno4, self.Franka, self.controller_manager)
 
         # Re-initialize variables
-        # self.user_prompt = None
         self.controllers_ready = False
-        self.previous_observations = None  # Reset previous observations
-        self.last_observation_time = None  # Reset last observation time
-
-        # Start user input thread again
-        # self.input_thread = threading.Thread(target=self.get_user_input)
-        # self.input_thread.daemon = True
-        # self.input_thread.start()
+        self.previous_observations = None
+        self.last_observation_time = None
 
         # Register physics callback again
         world.add_physics_callback("sim_step", self.sim_step)
@@ -319,9 +322,6 @@ class Chemistry3DMAS(BaseSample):
     def sim_step(self, step_size):
         world = self.get_world()
         if world.is_playing():
-            if world.current_time_step_index == 0:
-                world.reset()
-                self.controller_manager.reset()
             current_observations = world.get_observations()
             current_time = time.time()
 
