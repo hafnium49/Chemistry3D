@@ -327,8 +327,8 @@ class Chemistry3DMAS(BaseSample):
     def sim_step(self, step_size):
         world = self.get_world()
         if world.is_playing():
-            # Added check to ensure physics simulation view is created
-            if not self.Franka.is_simulation_view_created():
+            # Check if the robot's physics handles are initialized
+            if not self.Franka.handles_initialized:
                 # Skip this step until the simulation view is ready
                 return
 
