@@ -33,7 +33,7 @@ class Chem_Lab_Task_SL(BaseTask):
         # self._Feo_position = self._beaker_Feo_position + np.array([0.0, 0.0, 0.02])
         self._Bottle_Kmno4_position = np.array([-2.063, -1.34, 0.1])
         self._Bottle_Fecl2_position = np.array([-2.16, -1.34, 0.1])
-        self._pour0_offset = np.array([-0.08, 0.00, 0.135]) #np.array([0.08, 0.00, 0.125])
+        self._pour0_offset = np.array([0.00, 0.00, 0.135]) #np.array([0.08, 0.00, 0.125])
         # self._Fecl2_Bottle_Beaker_Pour_Offset = np.array([-0.078, 0.00, 0.125])
         # self._pour1_offset = np.array([-0.06, 0.001, 0.091])
 
