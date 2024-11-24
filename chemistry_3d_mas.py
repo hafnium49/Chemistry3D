@@ -330,6 +330,7 @@ class Chemistry3DMAS(BaseSample):
             # Check if the robot's physics handles are initialized
             if not self.Franka.handles_initialized:
                 # Skip this step until the simulation view is ready
+                print('Skipping sim_step until the simulation view is ready')
                 return
 
             current_observations = world.get_observations()
