@@ -142,7 +142,7 @@ class Chemistry3DMAS(BaseSample):
 
         # Initialize the controller manager
         self.controller_manager = ControllerManager(world, self.Franka, self.Franka.gripper)
-        self.controller_manager.initialize()
+        # self.controller_manager.initialize()
 
         # Initialize simulation containers with specific properties
         self.Sim_Bottle_Kmno4 = Sim_Container(
@@ -212,7 +212,7 @@ class Chemistry3DMAS(BaseSample):
 
         # Re-initialize the controller manager after the robot is initialized
         self.controller_manager = ControllerManager(world, self.Franka, self.Franka.gripper)
-        self.controller_manager.initialize()
+        # self.controller_manager.initialize()
 
         # Re-initialize simulation containers with specific properties
         self.Sim_Bottle_Kmno4 = Sim_Container(
