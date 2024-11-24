@@ -133,10 +133,17 @@ class Chemistry3DMAS(BaseSample):
         self.print_and_send(f"Franka: {self.Franka}")
         if self.Franka is None:
             self.print_and_send("Franka robot not found in the scene.")
+        else:
+            # Initialize the robot's articulation
+            await self.Franka.initialize()
+            await self.Franka.reset_buffers()
+            self.print_and_send("Franka robot initialized.")
+
         self.mycamera = world.scene.get_object("camera")
 
         # Initialize the controller manager
         self.controller_manager = ControllerManager(world, self.Franka, self.Franka.gripper)
+        await self.controller_manager.initialize()
 
         # Initialize simulation containers with specific properties
         self.Sim_Bottle_Kmno4 = Sim_Container(
@@ -322,6 +329,11 @@ class Chemistry3DMAS(BaseSample):
     def sim_step(self, step_size):
         world = self.get_world()
         if world.is_playing():
+            # Added check to ensure physics simulation view is created
+            if not self.Franka.is_simulation_view_created():
+                # Skip this step until the simulation view is ready
+                return
+
             current_observations = world.get_observations()
             current_time = time.time()
 
