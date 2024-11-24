@@ -31,6 +31,7 @@ class Chemistry3DMAS(BaseSample):
         self._world_settings["physics_dt"] = 1.0 / 120.0
         self._world_settings["stage_units_in_meters"] = 1.0
         self._world_settings["physics_prim_path"] = "/physicsScene"
+        # self._world_settings["device"] = "cuda" #"cpu" #
         self._world_settings["set_defaults"] = False
 
         self.controller_manager = None
@@ -325,7 +326,8 @@ class Chemistry3DMAS(BaseSample):
             current_time = time.time()
 
             # Check if observations have changed and limit print rate to 1 Hz
-            if (self.previous_observations is None or self.observations_changed(self.previous_observations, current_observations)) and (self.last_observation_time is None or (current_time - self.last_observation_time) >= 1.0):
+            if (self.previous_observations is None) and (self.last_observation_time is None or (current_time - self.last_observation_time) >= 1.0):
+            # if (self.previous_observations is None or self.observations_changed(self.previous_observations, current_observations)) and (self.last_observation_time is None or (current_time - self.last_observation_time) >= 1.0):
                 self.print_and_send(f"Current Observations: {current_observations}")
                 self.previous_observations = copy.deepcopy(current_observations)
                 self.last_observation_time = current_time
