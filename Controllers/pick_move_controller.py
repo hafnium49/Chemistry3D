@@ -37,16 +37,14 @@ class PickMoveController(manipulators_controllers.PickPlaceController):
     def __init__(
         self,
         name: str,
-        robot_articulation: Articulation,
         gripper: ParallelGripper,
+        robot_articulation: Articulation,
         end_effector_initial_height: Optional[float] = None,
         events_dt: Optional[List[float]] = None,
-        speed: float = 1.0
     ) -> None:
         if events_dt is None:
             # Adjusted durations for the 7 phases
             events_dt = [0.008, 0.005, 1.0, 0.1, 0.05, 0.05, 0.05]
-            events_dt = [dt / speed for dt in events_dt]
         super().__init__(
             name=name,
             cspace_controller=RMPFlowController(
