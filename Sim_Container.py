@@ -82,7 +82,7 @@ class Sim_Container(Container):
             name="pickmove_controller",
             cspace_controller=RMPFlowController(name="pickmove_cspace_controller", robot_articulation=robot),
             gripper=robot.gripper,
-            speed=5.0 #1.5
+            speed=0.1 #1.5
         )
         
         from omni.isaac.examples.user_examples.Controllers.pour_controller import PourController
@@ -99,7 +99,7 @@ class Sim_Container(Container):
             name="return_controller",
             cspace_controller=RMPFlowController(name="return_cspace_controller", robot_articulation=robot),
             gripper=robot.gripper,
-            speed=5.0 #1.5
+            speed=0.1 #1.5
         )
 
         controller_manager.add_controller('pickmove_controller', pickmove_controller)
