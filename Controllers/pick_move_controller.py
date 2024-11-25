@@ -3,76 +3,57 @@
 from typing import List, Optional
 import numpy as np
 
-from omni.isaac.core.controllers import BaseController
+import omni.isaac.manipulators.controllers as manipulators_controllers
+from omni.isaac.core.articulations import Articulation
+from omni.isaac.franka.controllers.rmpflow_controller import RMPFlowController
+from omni.isaac.manipulators.grippers.parallel_gripper import ParallelGripper
 from omni.isaac.core.utils.rotations import euler_angles_to_quat
-from omni.isaac.core.utils.stage import get_stage_units
 from omni.isaac.core.utils.types import ArticulationAction
-from omni.isaac.manipulators.grippers.gripper import Gripper
 
-class PickMoveController(BaseController):
+
+class PickMoveController(manipulators_controllers.PickPlaceController):
     """
-    A pick-and-move state machine controller.
+    A pick-and-move controller for the Franka robot.
 
-    This controller follows a sequence of phases to pick up an object and move it to a target position.
+    This controller extends the PickPlaceController and adjusts it for a pick-and-move task.
 
     Phases:
-    - Phase 0: Move end_effector above the object at 'end_effector_initial_height'.
-    - Phase 1: Lower end_effector to grip the object.
+    - Phase 0: Move end effector above the object at 'end_effector_initial_height'.
+    - Phase 1: Lower end effector to grip the object.
     - Phase 2: Wait for the robot's inertia to settle.
     - Phase 3: Close the gripper to pick up the object.
-    - Phase 4: Lift the object by raising the end_effector.
+    - Phase 4: Lift the object by raising the end effector.
     - Phase 5: Move the object horizontally to the target position.
     - Phase 6: Lower the object to the target height.
 
     Args:
         name (str): Identifier for the controller.
-        cspace_controller (BaseController): A cartesian space controller returning an ArticulationAction type.
-        gripper (Gripper): A gripper controller for open/close actions.
-        end_effector_initial_height (float, optional): Initial height for the end effector. Defaults to 0.32 meters if not specified.
-        events_dt (list of float, optional): Time duration for each phase. Defaults to default durations divided by speed if not specified.
-        speed (float, optional): Speed multiplier for phase durations. Defaults to 16.0.
-
-    Raises:
-        Exception: If 'events_dt' is not a list or numpy array.
-        Exception: If 'events_dt' length is greater than 10.
+        gripper (ParallelGripper): A gripper controller for open/close actions.
+        robot_articulation (Articulation): The robot articulation.
+        end_effector_initial_height (Optional[float], optional): Initial height for the end effector. Defaults to None.
+        events_dt (Optional[List[float]], optional): Time duration for each phase. Defaults to None.
     """
 
     def __init__(
         self,
         name: str,
-        cspace_controller: BaseController,
-        gripper: Gripper,
+        gripper: ParallelGripper,
+        robot_articulation: Articulation,
         end_effector_initial_height: Optional[float] = None,
         events_dt: Optional[List[float]] = None,
-        speed: float = 16.0,
     ) -> None:
-        super().__init__(name=name)
-        self._event = 0
-        self._t = 0
-        self._h1 = end_effector_initial_height
-        if self._h1 is None:
-            self._h1 = 0.32 / get_stage_units()
-        self._h0 = None
-        self._events_dt = events_dt
-        if self._events_dt is None:
-            default_durations = [0.005, 0.005, 0.02, 0.02, 0.005, 0.005, 0.005]
-            self._events_dt = [dt / speed for dt in default_durations]
-        else:
-            if not isinstance(self._events_dt, (np.ndarray, list)):
-                raise Exception("events dt need to be list or numpy array")
-            if len(self._events_dt) > 10:
-                raise Exception("events dt length must be less than or equal to 10")
-        self._cspace_controller = cspace_controller
-        self._gripper = gripper
-        self._pause = False
-        self._start = True
-        return
-
-    def is_paused(self) -> bool:
-        return self._pause
-
-    def get_current_event(self) -> int:
-        return self._event
+        if events_dt is None:
+            # Adjusted durations for the 7 phases
+            events_dt = [0.008, 0.005, 1.0, 0.1, 0.05, 0.05, 0.05]
+        super().__init__(
+            name=name,
+            cspace_controller=RMPFlowController(
+                name=name + "_cspace_controller", robot_articulation=robot_articulation
+            ),
+            gripper=gripper,
+            end_effector_initial_height=end_effector_initial_height,
+            events_dt=events_dt,
+        )
 
     def forward(
         self,
@@ -82,13 +63,21 @@ class PickMoveController(BaseController):
         end_effector_offset: Optional[np.ndarray] = None,
         end_effector_orientation: Optional[np.ndarray] = None,
     ) -> ArticulationAction:
+        """
+        Execute one step of the controller.
+
+        Args:
+            picking_position (np.ndarray): Position of the object to be picked.
+            target_position (np.ndarray): Position to move the object to.
+            current_joint_positions (np.ndarray): Current joint positions of the robot.
+            end_effector_offset (np.ndarray, optional): Offset of the end effector target. Defaults to None.
+            end_effector_orientation (np.ndarray, optional): Orientation of the end effector. Defaults to None.
+
+        Returns:
+            ArticulationAction: Action to be executed by the ArticulationController.
+        """
         if end_effector_offset is None:
             end_effector_offset = np.array([0, 0, 0])
-        if self._start:
-            self._start = False
-            # Open the gripper at the start
-            action = self._gripper.forward(action="open")
-            return action
         if self._pause or self.is_done():
             self.pause()
             target_joint_positions = [None] * current_joint_positions.shape[0]
@@ -126,17 +115,12 @@ class PickMoveController(BaseController):
             self._t = 0
         return target_joint_positions
 
-    def _get_interpolated_xy(self, target_x, target_y, current_x, current_y):
-        alpha = self._get_alpha()
-        xy_target = (1 - alpha) * np.array([current_x, current_y]) + alpha * np.array([target_x, target_y])
-        return xy_target
-
     def _get_alpha(self):
         if self._event < 5:
             return 0
         elif self._event == 5:
             return self._mix_sin(self._t)
-        elif self._event >= 6:
+        elif self._event == 6:
             return 1.0
         else:
             raise ValueError()
@@ -155,49 +139,38 @@ class PickMoveController(BaseController):
         elif self._event == 5:
             h = self._h1  # Moving horizontally at initial height
         elif self._event == 6:
-            h = self._combine_convex(self._h1, target_height, self._mix_sin(self._t))
+            h = target_height  # Lowering to the target height
         else:
             raise ValueError()
         return h
-
-    def _mix_sin(self, t):
-        return 0.5 * (1 - np.cos(t * np.pi))
-
-    def _combine_convex(self, a, b, alpha):
-        return (1 - alpha) * a + alpha * b
 
     def reset(
         self,
         end_effector_initial_height: Optional[float] = None,
         events_dt: Optional[List[float]] = None,
-        speed: float = 16.0,
     ) -> None:
-        super().reset()
-        self._cspace_controller.reset()
-        self._event = 0
-        self._t = 0
-        if end_effector_initial_height is not None:
-            self._h1 = end_effector_initial_height
-        self._pause = False
-        self._start = True
-        if events_dt is not None:
-            self._events_dt = events_dt
-            if not isinstance(self._events_dt, (np.ndarray, list)):
-                raise Exception("events dt need to be list or numpy array")
-            if len(self._events_dt) > 10:
-                raise Exception("events dt length must be less than or equal to 10")
-        else:
-            default_durations = [0.005, 0.005, 0.02, 0.02, 0.005, 0.005, 0.005]
-            self._events_dt = [dt / speed for dt in default_durations]
-        return
+        """
+        Reset the state machine to start from the first phase.
+
+        Args:
+            end_effector_initial_height (float, optional): Initial height for the end effector. Defaults to None.
+            events_dt (list of float, optional): Time duration for each phase. Defaults to None.
+        """
+        super().reset(end_effector_initial_height=end_effector_initial_height, events_dt=events_dt)
 
     def is_done(self) -> bool:
+        """
+        Check if the state machine has reached the last phase.
+
+        Returns:
+            bool: True if the last phase is reached, False otherwise.
+        """
         return self._event >= len(self._events_dt)
 
     def pause(self) -> None:
+        """Pause the state machine's time and phase."""
         self._pause = True
-        return
 
     def resume(self) -> None:
+        """Resume the state machine's time and phase."""
         self._pause = False
-        return
