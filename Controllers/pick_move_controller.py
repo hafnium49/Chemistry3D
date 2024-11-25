@@ -104,14 +104,14 @@ class PickMoveController(BaseController):
                 self._current_target_x = picking_position[0]
                 self._current_target_y = picking_position[1]
                 self._h0 = picking_position[2]
-                print("Event:", self._event)
-                print("Picking position:", picking_position)
+                # print("Event:", self._event)
+                # print("Picking position:", picking_position)
             interpolated_xy = self._get_interpolated_xy(
                 target_position[0], target_position[1], self._current_target_x, self._current_target_y
             )
-            print("Interpolated XY:", interpolated_xy)
+            # print("Interpolated XY:", interpolated_xy)
             target_height = self._get_target_hs(target_position[2])
-            print("Target Height:", target_height)
+            # print("Target Height:", target_height)
             position_target = np.array(
                 [
                     interpolated_xy[0] + end_effector_offset[0],
@@ -119,13 +119,13 @@ class PickMoveController(BaseController):
                     target_height + end_effector_offset[2],
                 ]
             )
-            print("Position Target:", position_target)
+            # print("Position Target:", position_target)
             if end_effector_orientation is None:
                 end_effector_orientation = euler_angles_to_quat(np.array([0, np.pi, 0]))
             target_joint_positions = self._cspace_controller.forward(
                 target_end_effector_position=position_target, target_end_effector_orientation=end_effector_orientation
             )
-            print("Target Joint Positions:", target_joint_positions)
+            # print("Target Joint Positions:", target_joint_positions)
         self._t += self._events_dt[self._event]
         if self._t >= 1.0:
             self._event += 1
