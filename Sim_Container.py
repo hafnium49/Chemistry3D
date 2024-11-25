@@ -80,7 +80,7 @@ class Sim_Container(Container):
         """Update simulation with the new state and task details for the controller."""
         pickmove_controller = PickMoveController(
             name="pickmove_controller",
-            cspace_controller=RMPFlowController(name="pickmove_cspace_controller", robot_articulation=robot),
+            robot_articulation=robot,
             gripper=robot.gripper,
             speed=1.5
         )
