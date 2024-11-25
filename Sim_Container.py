@@ -92,7 +92,9 @@ class Sim_Container(Container):
             gripper=robot.gripper,
             Sim_Container1=Sim_Container1,
             Sim_Container2=self,
-            pour_volume=pour_volume
+            pour_volume=pour_volume,
+            speed = 3.0
+
         )
 
         return_controller = PlaceController(

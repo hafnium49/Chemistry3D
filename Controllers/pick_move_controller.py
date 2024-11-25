@@ -44,7 +44,7 @@ class PickMoveController(BaseController):
         gripper: Gripper,
         end_effector_initial_height: Optional[float] = None,
         events_dt: Optional[List[float]] = None,
-        speed: float = 16.0,
+        speed: float = 1.0,
     ) -> None:
         super().__init__(name=name)
         self._event = 0
