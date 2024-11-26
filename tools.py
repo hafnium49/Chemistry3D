@@ -96,7 +96,7 @@ def add_return_task(controller_manager, pour_position, return_position, current_
 
     # Set default values
     current_joint_positions = robot.get_joint_positions()
-    end_effector_offset = np.array([0.0, 0.0, 0.055])
+    end_effector_offset = np.array([0.0, 0.0, 0.02]) #np.array([0.0, 0.0, 0.055])
     end_effector_orientation = euler_angles_to_quat(np.array([np.pi / 2, np.pi / 2, 0]))
 
     param_template = {

@@ -26,9 +26,9 @@ class Chem_Lab_Task_SL(BaseTask):
         self._task_achieved = False
         self.Frankas = []
         self.Frankas_num = 7
-        self._beaker_Kmno4_position = np.array([-2.757, -1.34, 0.1])
-        self._beaker_Fecl2_position = np.array([-2.652, -1.34, 0.1])
-        self._beaker_Fecl2_Return_position = np.array([-2.652, -1.34, 0.1]) #np.array([-2.97, -1.13, 0.1])
+        self._beaker_Kmno4_position = np.array([-2.807, -1.34, 0.1]) #np.array([-2.757, -1.34, 0.1])
+        self._beaker_Fecl2_position = np.array([-2.662, -1.34, 0.1]) #np.array([-2.652, -1.34, 0.1])
+        self._beaker_Fecl2_Return_position = self._beaker_Fecl2_position #np.array([-2.97, -1.13, 0.1])
         # self._beaker_Feo_position = np.array([-2.572, -1.362, 0.1])
         # self._Feo_position = self._beaker_Feo_position + np.array([0.0, 0.0, 0.02])
         self._Bottle_Kmno4_position = np.array([-2.063, -1.34, 0.1])

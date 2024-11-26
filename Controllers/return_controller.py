@@ -40,7 +40,7 @@ class PlaceController(BaseController):
         gripper: Gripper,
         end_effector_initial_height: typing.Optional[float] = None,
         events_dt: typing.Optional[typing.List[float]] = None,
-        speed: float = 16.0 #1.0
+        speed: float = 1.0
     ) -> None:
         super().__init__(name=name)
         self._event = 0
@@ -51,7 +51,7 @@ class PlaceController(BaseController):
         self._h0 = None
         self._events_dt = events_dt
         if events_dt is None:
-            self._events_dt = [dt / speed for dt in [0.005, 0.005, 0.005, 0.1, 0.005]]
+            self._events_dt = [dt / speed for dt in [0.005, 0.005, 0.005, 0.05, 0.005]] # [dt / speed for dt in [0.005, 0.005, 0.005, 0.1, 0.005]]
         else:
             if not isinstance(self._events_dt, np.ndarray) and not isinstance(self._events_dt, list):
                 raise Exception("events dt need to be list or numpy array")

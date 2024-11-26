@@ -55,7 +55,7 @@ class PickMoveController(BaseController):
         self._h0 = None
         self._events_dt = events_dt
         if self._events_dt is None:
-            default_durations = [0.005, 0.005, 0.02, 0.02, 0.005, 0.005, 0.005]
+            default_durations = [0.003, 0.003, 0.02, 0.02, 0.005, 0.005, 0.005] # [0.005, 0.005, 0.02, 0.02, 0.005, 0.005, 0.005]
             self._events_dt = [dt / speed for dt in default_durations]
         else:
             if not isinstance(self._events_dt, (np.ndarray, list)):
