@@ -93,7 +93,7 @@ class Sim_Container(Container):
             Sim_Container1=Sim_Container1,
             Sim_Container2=self,
             pour_volume=pour_volume,
-            speed = 3.0
+            speed = 1.5
 
         )
 
@@ -101,6 +101,7 @@ class Sim_Container(Container):
             name="return_controller",
             cspace_controller=RMPFlowController(name="return_cspace_controller", robot_articulation=robot),
             gripper=robot.gripper,
+            # end_effector_initial_height=0.155, #0.2,
             speed=1.5
         )
 

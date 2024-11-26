@@ -153,16 +153,19 @@ class Chemistry3DMAS(BaseSample):
             world=world,
             sim_container=world.scene.get_object("Bottle_Kmno4"),
             solute={'MnO4^-': 0.02, 'K^+': 0.02, 'H^+': 0.04, 'SO4^2-': 0.02},
-            volume=0.02
+            volume=0.08
         )
         self.Sim_Bottle_Fecl2 = Sim_Container(
             world=world,
-            sim_container=world.scene.get_object("Bottle_Fecl2"),
-            solute={'Fe^2+': 0.06, 'Cl^-': 0.12},
-            volume=0.02
+            sim_container=world.scene.get_object("Bottle_Fecl2")
         )
         self.Sim_Beaker_Kmno4 = Sim_Container(world=world, sim_container=world.scene.get_object("beaker_Kmno4"))
-        self.Sim_Beaker_Fecl2 = Sim_Container(world=world, sim_container=world.scene.get_object("beaker_Fecl2"))
+        self.Sim_Beaker_Fecl2 = Sim_Container(
+            world=world,
+            sim_container=world.scene.get_object("beaker_Fecl2"),
+            solute={'Fe^2+': 0.06, 'Cl^-': 0.12},
+            volume=0.08
+        )
 
         # Initialize the MAS system
         self.mas = MAS(world, self.controller_manager)
